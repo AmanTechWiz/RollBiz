@@ -1,0 +1,16 @@
+# Used via `fly deploy --ignorefile apps/server/.dockerignore` (context = repo root).
+# Keep in sync with Dockerfile.dockerignore.
+**/node_modules
+**/dist
+**/build
+**/.next
+**/.vercel
+**/.turbo
+**/.env
+**/.env.*
+!**/.env.example
+.git
+**/.DS_Store
+**/*.log
+docs
+supabase/.temp

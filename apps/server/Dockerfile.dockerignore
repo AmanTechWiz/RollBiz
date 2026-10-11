@@ -1,0 +1,16 @@
+# Picked up automatically by BuildKit for `docker build -f apps/server/Dockerfile .`
+# Keep in sync with .dockerignore.
+**/node_modules
+**/dist
+**/build
+**/.next
+**/.vercel
+**/.turbo
+**/.env
+**/.env.*
+!**/.env.example
+.git
+**/.DS_Store
+**/*.log
+docs
+supabase/.temp
