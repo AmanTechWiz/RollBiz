@@ -59,10 +59,12 @@ export class GameRoom extends Room<{ state: GameState; client: GameClient }> {
     }
   }
 
-  onCreate() {
-    // Rooms are private: hidden from listings and `joinOrCreate` matching.
-    // Players share `room.roomId` and friends join with `joinById`.
-    void this.setPrivate(true);
+  onCreate(options: unknown) {
+    // Public rooms are matched by Quick Play (`joinOrCreate`) until the game starts
+    // and the room is locked. Private rooms are joined by sharing `room.roomId`.
+    if (JoinOptionsSchema.safeParse(options).data?.isPrivate) {
+      this.setPrivate(true).catch((err) => console.warn("[room] setPrivate failed", err));
+    }
 
     // Single entry point so every message is validated by the shared zod union.
     this.onMessage("*", (client, type, payload) => this.handleMessage(client, type, payload));
@@ -194,7 +196,7 @@ export class GameRoom extends Room<{ state: GameState; client: GameClient }> {
     if (players.length < MIN_PLAYERS || !players.every((p) => p.ready)) return;
 
     this.state.phase = GamePhase.Playing;
-    void this.lock(); // no new joins mid-game (reconnections still work)
+    this.lock().catch((err) => console.warn("[room] lock failed", err)); // no new joins mid-game; reconnects still work
 
     for (const player of players) {
       player.position = 0;

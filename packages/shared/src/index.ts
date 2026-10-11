@@ -11,6 +11,8 @@ export const MAX_PLAYERS = 6;
 export const JoinOptionsSchema = z.object({
   accessToken: z.string().min(1),
   displayName: z.string().trim().min(1).max(24).optional(),
+  // Only read when the room is created: private rooms are skipped by Quick Play.
+  isPrivate: z.boolean().optional(),
 });
 export type JoinOptions = z.infer<typeof JoinOptionsSchema>;
 
