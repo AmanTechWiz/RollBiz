@@ -204,7 +204,7 @@ Each wave-2 task fills only its own files and writes tests in its own test file.
 
 **Files:** Fill `src/rules/property.ts` and `src/rules/auction.ts`. Tests in `test/property.test.ts` and `test/auction.test.ts`.
 
-**Interfaces:** Consumes `pay` and `getProperty` (F). Also consumes `countBuildings`/`groupHasBuildings`? No, not needed. Produces `rentFor`, `landOnProperty`, `startAuction` and `removeFromAuction`.
+**Interfaces:** Consumes `pay`, `getProperty`, `requireTurn` and `activePlayers` (F). Produces `rentFor`, `landOnProperty`, `startAuction` and `removeFromAuction`.
 
 - **Landing:**
   - Unowned property: `pending = { kind: "buy" }`.
