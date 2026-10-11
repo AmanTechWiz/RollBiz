@@ -49,6 +49,29 @@ export function joinByCode(session: Session, roomId: string): Promise<GameRoom> 
   return colyseus.joinById(roomId.trim(), joinOptions(session));
 }
 
+// The reconnection token lets a reloaded page (or a relaunched PWA) take its seat back.
+const RESUME_KEY = "rollbiz.resume";
+
+export function rememberRoom(room: GameRoom) {
+  localStorage.setItem(RESUME_KEY, room.reconnectionToken);
+}
+
+export function forgetRoom() {
+  localStorage.removeItem(RESUME_KEY);
+}
+
+/** Rejoins the room saved by rememberRoom, or returns null if there is none or it expired. */
+export async function resumeRoom(): Promise<GameRoom | null> {
+  const token = localStorage.getItem(RESUME_KEY);
+  if (!token) return null;
+  try {
+    return await colyseus.reconnect(token);
+  } catch {
+    forgetRoom();
+    return null;
+  }
+}
+
 export function sendMessage(room: GameRoom, type: ClientMessageType) {
   room.send(type);
 }
