@@ -87,14 +87,15 @@ export class GameRoom extends Room<{ state: GameState; client: GameClient }> {
     );
   }
 
-  /** Unexpected disconnect (network blip, tab suspended). */
+  /** Unexpected disconnect (network blip, tab suspended, page reload). */
   onDrop(client: GameClient) {
     const player = this.state.players.get(client.sessionId);
-    // In the lobby there is nothing to protect: fall through to onLeave.
-    if (!player || this.state.phase !== GamePhase.Playing) return;
+    if (!player) return;
 
     player.connected = false;
-    if (this.state.currentTurn === client.sessionId) this.advanceTurn();
+    if (this.state.phase === GamePhase.Playing && this.state.currentTurn === client.sessionId) {
+      this.advanceTurn();
+    }
 
     // Not awaited: the framework calls onReconnect() or onLeave() itself.
     // The catch only silences the rejection on timeout / room disposal.
