@@ -11,6 +11,7 @@ import {
 } from "@rollbiz/shared";
 import { isJwksUnavailable, verifySupabaseToken } from "../auth/supabase";
 import { PASS_START_BONUS, RECONNECT_SECONDS, STARTING_CASH, move, rollDice } from "../game/rules";
+import { canTakeSeat, releaseSeat, takeSeat } from "../game/seats";
 import { GameState, Player } from "./schema/GameState";
 
 /** Returned by onAuth; available as `client.auth`. */
@@ -25,10 +26,15 @@ const MAX_NAME_LENGTH = 24;
 
 export class GameRoom extends Room<{ state: GameState; client: GameClient }> {
   maxClients = MAX_PLAYERS;
+  // Clients sending more than this per second are disconnected.
+  maxMessagesPerSecond = 15;
   state = new GameState();
 
   /** Whether the current player already rolled this turn (server-only). */
   private hasRolled = false;
+
+  /** Users holding a seat-cap slot in this room (see game/seats.ts). */
+  private readonly seated = new Set<string>();
 
   /**
    * Runs at matchmaking time, before a seat is reserved. Throwing rejects the
@@ -40,9 +46,11 @@ export class GameRoom extends Room<{ state: GameState; client: GameClient }> {
 
     try {
       const user = await verifySupabaseToken(parsed.data.accessToken);
+      if (!canTakeSeat(user.userId)) throw new ServerError(429, "too many open rooms");
       const name = (parsed.data.displayName ?? user.name ?? "Player").slice(0, MAX_NAME_LENGTH);
       return { userId: user.userId, name };
     } catch (err) {
+      if (err instanceof ServerError) throw err;
       // Log the reason (never the token) so a bad SUPABASE_URL or legacy signing key is visible.
       const reason = err instanceof Error ? `${(err as { code?: string }).code ?? err.name}: ${err.message}` : String(err);
       console.warn(`[auth] token rejected, ${reason}`);
@@ -69,6 +77,8 @@ export class GameRoom extends Room<{ state: GameState; client: GameClient }> {
       if (player.id === auth.userId) throw new ServerError(409, "already in this room");
     }
 
+    this.seated.add(auth.userId);
+    takeSeat(auth.userId);
     this.state.players.set(
       client.sessionId,
       new Player({ id: auth.userId, name: auth.name, ready: false, connected: true, position: 0, cash: 0 }),
@@ -103,6 +113,7 @@ export class GameRoom extends Room<{ state: GameState; client: GameClient }> {
   onLeave(client: GameClient) {
     const player = this.state.players.get(client.sessionId);
     if (!player) return;
+    this.releaseUser(player.id);
 
     if (this.state.phase === GamePhase.Lobby) {
       this.state.players.delete(client.sessionId);
@@ -115,13 +126,22 @@ export class GameRoom extends Room<{ state: GameState; client: GameClient }> {
     if (this.state.currentTurn === client.sessionId) this.advanceTurn();
   }
 
+  onDispose() {
+    for (const userId of this.seated) this.releaseUser(userId);
+  }
+
+  private releaseUser(userId: string) {
+    if (this.seated.delete(userId)) releaseSeat(userId);
+  }
+
   // ---------------------------------------------------------------------------
   // Messages
 
   private handleMessage(client: GameClient, type: string | number, payload: unknown) {
     const body = typeof payload === "object" && payload !== null ? payload : {};
     const parsed = ClientMessageSchema.safeParse({ ...body, type });
-    if (!parsed.success) return this.sendError(client, `unknown or invalid message "${String(type)}"`);
+    // Don't answer junk: replying would amplify a flood of bad messages.
+    if (!parsed.success) return;
 
     const message: ClientMessage = parsed.data;
     switch (message.type) {
