@@ -211,6 +211,7 @@ export class GameRoom extends Room<{ state: GameState; client: GameClient }> {
       const economy = resolveEconomy(this.settings);
       created = createGame(economy, order, cryptoRng, Date.now());
       economyJson = JSON.stringify(economy);
+      toPublicView(created.state); // fail here, before the phase changes, if the view is broken
     } catch (err) {
       console.warn("[room] start failed", err);
       return this.sendError(client, err instanceof Error ? err.message : "could not start the game");
@@ -230,7 +231,10 @@ export class GameRoom extends Room<{ state: GameState; client: GameClient }> {
 
     const userId = client.auth?.userId;
     if (!userId) return this.sendError(client, "unauthenticated");
-    this.handleResult(applyAction(this.game, userId, action.data, cryptoRng), client);
+    const game = this.game;
+    this.guarded(`action:${action.data.type}`, () => {
+      this.handleResult(applyAction(game, userId, action.data, cryptoRng), client);
+    }, client);
   }
 
   // ---------------------------------------------------------------------------
@@ -239,7 +243,23 @@ export class GameRoom extends Room<{ state: GameState; client: GameClient }> {
   /** Server-issued engine actions (time-up, forfeit). Failures are only logged. */
   private applySystem(action: SystemAction) {
     if (!this.game) return; // no engine game yet: nothing to forfeit or time out
-    this.handleResult(applySystemAction(this.game, action, cryptoRng));
+    const game = this.game;
+    this.guarded(`system:${action.type}`, () => {
+      this.handleResult(applySystemAction(game, action, cryptoRng));
+    });
+  }
+
+  /**
+   * Engine code throws non-RuleErrors only on bugs. Timer callbacks run outside Colyseus' hook
+   * wrappers, so an escaped throw would crash the whole process. Log it and leave room state as is.
+   */
+  private guarded(label: string, fn: () => void, client?: GameClient) {
+    try {
+      fn();
+    } catch (err) {
+      console.error(`[room ${this.roomId}] engine error during ${label}`, err);
+      if (client) this.sendError(client, "internal error, please retry");
+    }
   }
 
   private handleResult(result: ApplyResult, client?: GameClient) {
@@ -254,8 +274,9 @@ export class GameRoom extends Room<{ state: GameState; client: GameClient }> {
 
   /** Stores a new engine state, publishes it and broadcasts what happened. */
   private commit(state: EngineState, events: unknown[]) {
+    const gameJson = JSON.stringify(toPublicView(state)); // may throw: do this before touching state
     this.game = state;
-    this.state.gameJson = JSON.stringify(toPublicView(state));
+    this.state.gameJson = gameJson;
     if (events.length > 0) this.broadcast("events", { events });
     if (state.status === "finished") {
       this.timeUpTimer?.clear();
