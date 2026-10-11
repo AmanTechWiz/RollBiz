@@ -30,11 +30,11 @@ export type GameView = {
 // We decode without a client-side schema class, so state is untyped here.
 export type GameRoom = Room<any, any>;
 
-function joinOptions(session: Session): JoinOptions {
+function joinOptions(session: Session, isPrivate = false): JoinOptions {
   const meta = session.user.user_metadata as Record<string, unknown>;
   const raw = meta.full_name ?? meta.name ?? session.user.email?.split("@")[0];
   const displayName = typeof raw === "string" && raw.trim() ? raw.trim().slice(0, 24) : undefined;
-  return { accessToken: session.access_token, displayName };
+  return { accessToken: session.access_token, displayName, isPrivate };
 }
 
 export function quickPlay(session: Session): Promise<GameRoom> {
@@ -42,7 +42,7 @@ export function quickPlay(session: Session): Promise<GameRoom> {
 }
 
 export function createPrivateRoom(session: Session): Promise<GameRoom> {
-  return colyseus.create(GAME_ROOM, joinOptions(session));
+  return colyseus.create(GAME_ROOM, joinOptions(session, true));
 }
 
 export function joinByCode(session: Session, roomId: string): Promise<GameRoom> {
