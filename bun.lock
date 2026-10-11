@@ -15,6 +15,7 @@
       "dependencies": {
         "@colyseus/schema": "^5.0.36",
         "@colyseus/tools": "^0.18.9",
+        "@rollbiz/engine": "workspace:*",
         "@rollbiz/shared": "workspace:*",
         "colyseus": "^0.18.9",
         "express": "^5.3.0",
@@ -35,6 +36,7 @@
       "dependencies": {
         "@colyseus/sdk": "^0.18.5",
         "@fontsource-variable/fredoka": "^5.3.0",
+        "@rollbiz/engine": "workspace:*",
         "@rollbiz/shared": "workspace:*",
         "@supabase/supabase-js": "^2.117.3",
         "motion": "^14.1.0",
@@ -65,6 +67,16 @@
       "devDependencies": {
         "@types/bun": "^1.4.2",
         "drizzle-kit": "^0.31.11",
+      },
+    },
+    "packages/engine": {
+      "name": "@rollbiz/engine",
+      "version": "0.0.0",
+      "dependencies": {
+        "zod": "^4.6.6",
+      },
+      "devDependencies": {
+        "@types/bun": "^1.4.2",
       },
     },
     "packages/shared": {
@@ -399,6 +411,8 @@
     "@pm2/io": ["@pm2/io@6.1.0", "", { "dependencies": { "async": "~2.6.1", "debug": "~4.3.1", "eventemitter2": "^6.3.1", "require-in-the-middle": "^5.0.0", "semver": "~7.5.4", "shimmer": "^1.2.0", "signal-exit": "^3.0.3", "tslib": "1.9.3" } }, "sha512-IxHuYURa3+FQ6BKePlgChZkqABUKFYH6Bwbw7V/pWU1pP6iR1sCI26l7P9ThUEB385ruZn/tZS3CXDUF5IA1NQ=="],
 
     "@rollbiz/db": ["@rollbiz/db@workspace:packages/db"],
+
+    "@rollbiz/engine": ["@rollbiz/engine@workspace:packages/engine"],
 
     "@rollbiz/server": ["@rollbiz/server@workspace:apps/server"],
 

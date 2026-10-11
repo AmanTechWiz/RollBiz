@@ -16,15 +16,25 @@ export const JoinOptionsSchema = z.object({
 });
 export type JoinOptions = z.infer<typeof JoinOptionsSchema>;
 
-// Client -> server messages. Every message is validated with this union on the server.
+// Client -> server messages. The server validates each one with this union, then
+// `settings` with the engine's RoomSettingsSchema and `action` with its ActionSchema.
 export const ClientMessageSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("ready") }),
-  z.object({ type: z.literal("roll") }),
-  z.object({ type: z.literal("buy") }),
-  z.object({ type: z.literal("endTurn") }),
+  // Host only, lobby only. Partial settings, merged over the current ones. Unreadies everyone.
+  z.object({ type: z.literal("updateSettings"), settings: z.record(z.string(), z.unknown()) }),
+  // Host only, lobby only: starts once MIN_PLAYERS are present and everyone is ready.
+  z.object({ type: z.literal("start") }),
+  z.object({ type: z.literal("action"), action: z.unknown() }),
 ]);
 export type ClientMessage = z.infer<typeof ClientMessageSchema>;
 export type ClientMessageType = ClientMessage["type"];
+
+/** Server -> client messages (besides state sync). */
+export type ServerMessages = {
+  error: { message: string };
+  /** Engine GameEvent[] produced by the last action, for animations and the activity log. */
+  events: { events: unknown[] };
+};
 
 export const GamePhase = {
   Lobby: "lobby",
