@@ -1,0 +1,21 @@
+{
+  "name": "rollbiz",
+  "private": true,
+  "type": "module",
+  "workspaces": ["apps/*", "packages/*"],
+  "scripts": {
+    "dev": "bun run --filter './apps/*' dev",
+    "dev:web": "bun run --filter @rollbiz/web dev",
+    "dev:server": "bun run --filter @rollbiz/server dev",
+    "build": "bun run --filter './apps/*' build",
+    "typecheck": "bun run --filter '*' typecheck",
+    "db:generate": "bun run --filter @rollbiz/db generate",
+    "db:migrate": "bun run --filter @rollbiz/db migrate",
+    "supabase:start": "supabase start",
+    "supabase:stop": "supabase stop"
+  },
+  "devDependencies": {
+    "supabase": "^2.120.0",
+    "typescript": "^7.0.2"
+  }
+}
