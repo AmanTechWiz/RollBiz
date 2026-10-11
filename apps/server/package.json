@@ -10,7 +10,8 @@
     "dev": "tsx watch src/index.ts",
     "build": "node scripts/build.mjs",
     "start": "node dist/index.js",
-    "typecheck": "tsc -p tsconfig.json"
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "bun test"
   },
   "dependencies": {
     "@colyseus/schema": "^5.0.36",

@@ -1,4 +1,3 @@
-import { randomInt } from "node:crypto";
 import { Room, ServerError, type AuthContext, type Client } from "colyseus";
 import {
   ClientMessageSchema,
@@ -8,17 +7,30 @@ import {
   MIN_PLAYERS,
   type ClientMessage,
   type JoinOptions,
+  type ServerMessages,
 } from "@rollbiz/shared";
+import {
+  ActionSchema,
+  DEFAULT_SETTINGS,
+  applyAction,
+  applySystemAction,
+  createGame,
+  resolveEconomy,
+  toPublicView,
+  type ApplyResult,
+  type GameState as EngineState,
+  type RoomSettings,
+  type SystemAction,
+} from "@rollbiz/engine";
 import { isJwksUnavailable, verifySupabaseToken } from "../auth/supabase";
-import { PASS_START_BONUS, RECONNECT_SECONDS, STARTING_CASH, move, rollDice } from "../game/rules";
+import { RECONNECT_SECONDS, cryptoRng, mergeSettings, shuffle } from "../game/room-logic";
 import { canTakeSeat, releaseSeat, takeSeat } from "../game/seats";
 import { GameState, Player } from "./schema/GameState";
 
 /** Returned by onAuth; available as `client.auth`. */
 export type AuthData = { userId: string; name: string };
 
-/** Server -> client messages. */
-export type ServerMessages = { error: { message: string } };
+export type { ServerMessages };
 
 export type GameClient = Client<{ auth: AuthData; messages: ServerMessages }>;
 
@@ -30,8 +42,14 @@ export class GameRoom extends Room<{ state: GameState; client: GameClient }> {
   maxMessagesPerSecond = 15;
   state = new GameState();
 
-  /** Whether the current player already rolled this turn (server-only). */
-  private hasRolled = false;
+  /** Authoritative engine state; null in the lobby (server-only, clients get `gameJson`). */
+  private game: EngineState | null = null;
+
+  /** Parsed lobby settings, mirrored to `state.settingsJson`. */
+  private settings: RoomSettings = DEFAULT_SETTINGS;
+
+  /** Timed-mode deadline timer. */
+  private timeUpTimer: { clear(): void } | null = null;
 
   /** Users holding a seat-cap slot in this room (see game/seats.ts). */
   private readonly seated = new Set<string>();
@@ -66,6 +84,8 @@ export class GameRoom extends Room<{ state: GameState; client: GameClient }> {
       this.setPrivate(true).catch((err) => console.warn("[room] setPrivate failed", err));
     }
 
+    this.state.settingsJson = JSON.stringify(this.settings);
+
     // Single entry point so every message is validated by the shared zod union.
     this.onMessage("*", (client, type, payload) => this.handleMessage(client, type, payload));
   }
@@ -83,8 +103,9 @@ export class GameRoom extends Room<{ state: GameState; client: GameClient }> {
     takeSeat(auth.userId);
     this.state.players.set(
       client.sessionId,
-      new Player({ id: auth.userId, name: auth.name, ready: false, connected: true, position: 0, cash: 0 }),
+      new Player({ id: auth.userId, name: auth.name, ready: false, connected: true }),
     );
+    if (this.state.hostId === "") this.state.hostId = client.sessionId;
   }
 
   /** Unexpected disconnect (network blip, tab suspended, page reload). */
@@ -93,9 +114,6 @@ export class GameRoom extends Room<{ state: GameState; client: GameClient }> {
     if (!player) return;
 
     player.connected = false;
-    if (this.state.phase === GamePhase.Playing && this.state.currentTurn === client.sessionId) {
-      this.advanceTurn();
-    }
 
     // Not awaited: the framework calls onReconnect() or onLeave() itself.
     // The catch only silences the rejection on timeout / room disposal.
@@ -104,12 +122,7 @@ export class GameRoom extends Room<{ state: GameState; client: GameClient }> {
 
   onReconnect(client: GameClient) {
     const player = this.state.players.get(client.sessionId);
-    if (!player) return;
-    player.connected = true;
-    // Everyone was gone: hand the turn to whoever came back first.
-    if (this.state.phase === GamePhase.Playing && this.state.currentTurn === "") {
-      this.setTurn(client.sessionId);
-    }
+    if (player) player.connected = true;
   }
 
   /** Consented leave, or a drop whose reconnection window expired. */
@@ -120,16 +133,20 @@ export class GameRoom extends Room<{ state: GameState; client: GameClient }> {
 
     if (this.state.phase === GamePhase.Lobby) {
       this.state.players.delete(client.sessionId);
-      this.maybeStartGame();
+      if (this.state.hostId === client.sessionId) {
+        // Hand the room to the next player in join order.
+        this.state.hostId = this.state.players.keys().next().value ?? "";
+      }
       return;
     }
 
-    // During a game the seat is kept (cash/position) but is skipped from now on.
+    // During a game the entry is kept (the name stays visible) but the player forfeits.
     player.connected = false;
-    if (this.state.currentTurn === client.sessionId) this.advanceTurn();
+    if (this.state.phase === GamePhase.Playing) this.applySystem({ type: "forfeit", playerId: player.id });
   }
 
   onDispose() {
+    this.timeUpTimer?.clear();
     for (const userId of this.seated) this.releaseUser(userId);
   }
 
@@ -150,12 +167,12 @@ export class GameRoom extends Room<{ state: GameState; client: GameClient }> {
     switch (message.type) {
       case "ready":
         return this.onReady(client);
-      case "roll":
-        return this.onRoll(client);
-      case "buy":
-        return this.sendError(client, "not implemented");
-      case "endTurn":
-        return this.onEndTurn(client);
+      case "updateSettings":
+        return this.onUpdateSettings(client, message.settings);
+      case "start":
+        return this.onStart(client);
+      case "action":
+        return this.onAction(client, message.action);
     }
   }
 
@@ -164,69 +181,103 @@ export class GameRoom extends Room<{ state: GameState; client: GameClient }> {
     const player = this.state.players.get(client.sessionId);
     if (!player) return;
     player.ready = !player.ready;
-    this.maybeStartGame();
   }
 
-  private onRoll(client: GameClient) {
-    if (!this.isCurrentPlayer(client)) return this.sendError(client, "not your turn");
-    if (this.hasRolled) return this.sendError(client, "already rolled this turn");
-    const player = this.state.players.get(client.sessionId);
-    if (!player) return;
+  private onUpdateSettings(client: GameClient, patch: Record<string, unknown>) {
+    if (this.state.phase !== GamePhase.Lobby) return this.sendError(client, "game already started");
+    if (!this.isHost(client)) return this.sendError(client, "only the host can change settings");
 
-    const [a, b] = rollDice();
-    this.state.lastRoll.clear();
-    this.state.lastRoll.push(a, b);
+    const merged = mergeSettings(this.settings, patch);
+    if (!merged.ok) return this.sendError(client, merged.error);
 
-    const result = move(player.position, a + b);
-    player.position = result.position;
-    if (result.passedStart) player.cash += PASS_START_BONUS;
-    this.hasRolled = true;
+    this.settings = merged.settings;
+    this.state.settingsJson = JSON.stringify(this.settings);
+    for (const player of this.state.players.values()) player.ready = false;
   }
 
-  private onEndTurn(client: GameClient) {
-    if (!this.isCurrentPlayer(client)) return this.sendError(client, "not your turn");
-    if (!this.hasRolled) return this.sendError(client, "roll before ending your turn");
-    this.advanceTurn();
+  private onStart(client: GameClient) {
+    if (this.state.phase !== GamePhase.Lobby) return this.sendError(client, "game already started");
+    if (!this.isHost(client)) return this.sendError(client, "only the host can start the game");
+
+    const players = [...this.state.players.values()];
+    if (players.length < MIN_PLAYERS) return this.sendError(client, `need at least ${MIN_PLAYERS} players`);
+    if (!players.every((p) => p.ready)) return this.sendError(client, "everyone must be ready");
+
+    let created: ReturnType<typeof createGame>;
+    let economyJson: string;
+    try {
+      // Random seat order.
+      const order = shuffle(players).map((p) => ({ id: p.id, name: p.name }));
+      const economy = resolveEconomy(this.settings);
+      created = createGame(economy, order, cryptoRng, Date.now());
+      economyJson = JSON.stringify(economy);
+    } catch (err) {
+      console.warn("[room] start failed", err);
+      return this.sendError(client, err instanceof Error ? err.message : "could not start the game");
+    }
+
+    this.state.economyJson = economyJson;
+    this.state.phase = GamePhase.Playing;
+    this.lock().catch((err) => console.warn("[room] lock failed", err)); // no new joins mid-game; reconnects still work
+    this.commit(created.state, created.events);
+    this.armTimeUp(created.state);
+  }
+
+  private onAction(client: GameClient, raw: unknown) {
+    if (this.state.phase !== GamePhase.Playing || !this.game) return this.sendError(client, "the game is not running");
+    const action = ActionSchema.safeParse(raw);
+    if (!action.success) return this.sendError(client, "invalid action");
+
+    const userId = client.auth?.userId;
+    if (!userId) return this.sendError(client, "unauthenticated");
+    this.handleResult(applyAction(this.game, userId, action.data, cryptoRng), client);
   }
 
   // ---------------------------------------------------------------------------
   // Game flow
 
-  private maybeStartGame() {
-    const players = [...this.state.players.values()];
-    if (players.length < MIN_PLAYERS || !players.every((p) => p.ready)) return;
+  /** Server-issued engine actions (time-up, forfeit). Failures are only logged. */
+  private applySystem(action: SystemAction) {
+    if (!this.game) return; // no engine game yet: nothing to forfeit or time out
+    this.handleResult(applySystemAction(this.game, action, cryptoRng));
+  }
 
-    this.state.phase = GamePhase.Playing;
-    this.lock().catch((err) => console.warn("[room] lock failed", err)); // no new joins mid-game; reconnects still work
-
-    for (const player of players) {
-      player.position = 0;
-      player.cash = STARTING_CASH;
+  private handleResult(result: ApplyResult, client?: GameClient) {
+    if (!result.ok) {
+      if (client) this.sendError(client, result.error);
+      else console.warn("[room] system action rejected:", result.error);
+      return;
     }
-    this.state.lastRoll.clear();
-
-    const ids = [...this.state.players.keys()];
-    this.setTurn(ids[randomInt(ids.length)] ?? "");
+    if (result.duplicate) return; // retried action: already applied, nothing new to publish
+    this.commit(result.state, result.events);
   }
 
-  /** Passes the turn to the next connected player in join order. */
-  private advanceTurn() {
-    const ids = [...this.state.players.keys()];
-    const start = ids.indexOf(this.state.currentTurn);
-    for (let step = 1; step <= ids.length; step++) {
-      const id = ids[(start + step + ids.length) % ids.length];
-      if (id && this.state.players.get(id)?.connected) return this.setTurn(id);
+  /** Stores a new engine state, publishes it and broadcasts what happened. */
+  private commit(state: EngineState, events: unknown[]) {
+    this.game = state;
+    this.state.gameJson = JSON.stringify(toPublicView(state));
+    if (events.length > 0) this.broadcast("events", { events });
+    if (state.status === "finished") {
+      this.timeUpTimer?.clear();
+      this.timeUpTimer = null;
+      this.state.phase = GamePhase.Finished;
     }
-    this.setTurn(""); // nobody connected; onReconnect picks it back up
   }
 
-  private setTurn(sessionId: string) {
-    this.state.currentTurn = sessionId;
-    this.hasRolled = false;
+  /** In timed mode, ends the game at `endsAt`. */
+  private armTimeUp(state: EngineState) {
+    if (state.endsAt === null) return;
+    this.timeUpTimer = this.clock.setTimeout(
+      () => {
+        this.timeUpTimer = null;
+        this.applySystem({ type: "timeUp" });
+      },
+      Math.max(0, state.endsAt - Date.now()),
+    );
   }
 
-  private isCurrentPlayer(client: GameClient) {
-    return this.state.phase === GamePhase.Playing && this.state.currentTurn === client.sessionId;
+  private isHost(client: GameClient) {
+    return this.state.hostId === client.sessionId;
   }
 
   private sendError(client: GameClient, message: string) {
