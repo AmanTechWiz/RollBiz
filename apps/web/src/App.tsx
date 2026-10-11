@@ -50,7 +50,7 @@ export function App() {
   let screen;
   if (loading || resuming) screen = <p className="m-auto text-xl font-semibold">Loading...</p>;
   else if (!session) screen = <SignIn />;
-  else if (room) screen = <RoomScreen room={room} />;
+  else if (room) screen = <RoomScreen room={room} session={session} />;
   else screen = <Lobby session={session} onJoined={setRoom} />;
 
   return <main className="app-shell flex flex-col">{screen}</main>;

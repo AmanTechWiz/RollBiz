@@ -16,6 +16,16 @@
   --color-berry: #ff4d6d;
   --color-berry-dark: #c9184a;
 
+  /* Property colour groups (placeholder palette) */
+  --color-group-brown: #8b5a2b;
+  --color-group-light-blue: #5ec8f2;
+  --color-group-pink: #f472b6;
+  --color-group-orange: #fb923c;
+  --color-group-red: #dc2626;
+  --color-group-yellow: #facc15;
+  --color-group-green: #16a34a;
+  --color-group-dark-blue: #1e3a8a;
+
   --radius-chunky: 1.25rem;
 }
 
