@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+/* Placeholder theme tokens. Final art direction is not decided yet. */
+@theme {
+  --font-display: "Fredoka Variable", ui-rounded, system-ui, sans-serif;
+
+  --color-brand: #6c3cf4;
+  --color-brand-dark: #4b22c2;
+  --color-brand-ink: #2b176b;
+  --color-cream: #fff6e5;
+
+  --color-go: #22c55e;
+  --color-go-dark: #15803d;
+  --color-sun: #ffc93c;
+  --color-sun-dark: #d99a00;
+  --color-berry: #ff4d6d;
+  --color-berry-dark: #c9184a;
+
+  --radius-chunky: 1.25rem;
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  html {
+    /* No rubber-band scrolling or pull-to-refresh in the installed app */
+    overscroll-behavior: none;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-cream font-display text-brand-ink antialiased;
+    overscroll-behavior: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    /* Game UI is not selectable; inputs opt back in below */
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+  }
+
+  input,
+  textarea {
+    user-select: text;
+    -webkit-user-select: text;
+  }
+}
+
+/* Full-height app shell that stays clear of notches and home indicators */
+@utility app-shell {
+  min-height: 100dvh;
+  padding-top: max(env(safe-area-inset-top), 1rem);
+  padding-right: max(env(safe-area-inset-right), 1rem);
+  padding-bottom: max(env(safe-area-inset-bottom), 1rem);
+  padding-left: max(env(safe-area-inset-left), 1rem);
+}
