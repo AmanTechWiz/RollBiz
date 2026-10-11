@@ -73,6 +73,7 @@ export function validateEconomy(economy: ResolvedEconomy): void {
     check(g.houseCost > 0 && g.hotelCost > 0, `group ${group.id} has a non-positive building cost`);
   }
   for (const deck of ["chance", "communityChest"] as const) {
+    check(economy.decks[deck].length > 0, `deck ${deck} has no cards left; disable fewer cards`);
     for (const cardId of economy.decks[deck]) {
       check(economy.cards[cardId]?.deck === deck, `deck ${deck} references missing card ${cardId}`);
     }

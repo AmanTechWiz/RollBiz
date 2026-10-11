@@ -28,6 +28,11 @@ function unmortgageCost(mortgage: number, rate: number): number {
   return Math.ceil(Number((mortgage * (1 + rate)).toFixed(6)));
 }
 
+/** Mortgage value is 50% of the resolved purchase price (spec §12). */
+function mortgageFor(price: number): number {
+  return price / 2;
+}
+
 function scaleRules(base: BaseRules, settings: RoomSettings, m: number): ResolvedRules {
   return {
     ...base,
@@ -97,13 +102,14 @@ export function resolveEconomy(input: RoomSettingsInput = {}): ResolvedEconomy {
   const properties: Record<string, ResolvedProperty> = {};
   for (const c of BASE_CITIES) {
     const group = BASE_GROUPS[c.group];
-    const mortgage = scaleAmount(c.mortgage, m);
+    const price = scaleAmount(c.price, m);
+    const mortgage = mortgageFor(price);
     properties[c.id] = {
       kind: "city",
       id: c.id,
       name: nameOf(c.id),
       group: c.group,
-      price: scaleAmount(c.price, m),
+      price,
       rents: c.rents.map((r) => scaleAmount(r, m)) as [number, number, number, number, number],
       houseCost: scaleAmount(group.houseCost, m),
       hotelCost: scaleAmount(group.hotelCost, m),
@@ -112,24 +118,26 @@ export function resolveEconomy(input: RoomSettingsInput = {}): ResolvedEconomy {
     };
   }
   for (const t of BASE_TRANSPORTS) {
-    const mortgage = scaleAmount(t.mortgage, m);
+    const price = scaleAmount(t.price, m);
+    const mortgage = mortgageFor(price);
     properties[t.id] = {
       kind: "transport",
       id: t.id,
       name: nameOf(t.id),
-      price: scaleAmount(t.price, m),
+      price,
       rents: t.rents.map((r) => scaleAmount(r, m)) as [number, number, number, number],
       mortgage,
       unmortgageCost: unmortgageCost(mortgage, rate),
     };
   }
   for (const u of BASE_UTILITIES) {
-    const mortgage = scaleAmount(u.mortgage, m);
+    const price = scaleAmount(u.price, m);
+    const mortgage = mortgageFor(price);
     properties[u.id] = {
       kind: "utility",
       id: u.id,
       name: nameOf(u.id),
-      price: scaleAmount(u.price, m),
+      price,
       mortgage,
       unmortgageCost: unmortgageCost(mortgage, rate),
     };

@@ -55,6 +55,24 @@ describe("pay", () => {
     expect(state.debts.map((d) => d.id)).toEqual([debt.id, debt.id + 1]);
   });
 
+  test("the debtCreated event carries a copy, not the queued debt", () => {
+    const { state, ctx } = setup();
+    pay(ctx, "p1", "p2", 25_000, "rent");
+    const event = ctx.events[0];
+    expect(event?.type === "debtCreated" && event.debt).toEqual(state.debts[0]!);
+    expect(event?.type === "debtCreated" && event.debt).not.toBe(state.debts[0]!);
+  });
+
+  test("an unknown recipient throws before anything moves", () => {
+    const { state, ctx } = setup();
+    const ledgerBefore = state.ledger.length;
+    expect(() => pay(ctx, "p1", "nobody", 100, "x")).toThrow();
+    expect(state.players[0]?.cash).toBe(20_000);
+    expect(state.ledger).toHaveLength(ledgerBefore);
+    expect(() => pay(ctx, "bank", "nobody", 100, "x")).toThrow();
+    expect(state.bank.cash).toBe(1_000_000 - 40_000);
+  });
+
   test("an exact balance is payable", () => {
     const { state, ctx } = setup();
     expect(pay(ctx, "p1", "bank", 20_000, "all in")).toBe(true);

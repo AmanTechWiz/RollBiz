@@ -16,6 +16,9 @@ export function pay(ctx: Ctx, from: Party, to: Party, amount: number, reason: st
   if (amount <= 0) return true;
   const { state } = ctx;
 
+  // Resolve the recipient first so an unknown party throws before anything changes.
+  const payee = to === "bank" ? null : getPlayer(state, to);
+
   if (from === "bank") {
     const shortfall = amount - state.bank.cash;
     if (shortfall > 0) {
@@ -29,14 +32,14 @@ export function pay(ctx: Ctx, from: Party, to: Party, amount: number, reason: st
     if (payer.cash < amount) {
       const debt = { id: nextId(state), debtor: from, creditor: to, amount, reason };
       state.debts.push(debt);
-      ctx.emit({ type: "debtCreated", debt });
+      ctx.emit({ type: "debtCreated", debt: { ...debt } });
       return false;
     }
     payer.cash -= amount;
   }
 
-  if (to === "bank") state.bank.cash += amount;
-  else getPlayer(state, to).cash += amount;
+  if (payee) payee.cash += amount;
+  else state.bank.cash += amount;
 
   record(ctx, from, to, amount, reason);
   ctx.emit({ type: "paid", from, to, amount, reason });

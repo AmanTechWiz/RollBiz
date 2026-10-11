@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { BASE_CITIES } from "../src/config/base";
+import { BASE_CARDS, BASE_CITIES } from "../src/config/base";
 import { resolveEconomy, scaleAmount } from "../src/economy/resolve";
 import type { ResolvedCity } from "../src/types";
 
@@ -102,6 +102,26 @@ describe("resolveEconomy", () => {
     expect(e.decks.communityChest).toHaveLength(15);
     expect(e.decks.chance).not.toContain("CH01");
     expect(e.cards.CH01).toBeUndefined();
+  });
+
+  test("mortgage is 50% of the resolved price, unmortgage adds 10%", () => {
+    const e = resolveEconomy({ priceMultiplier: 1.25 });
+    const patna = e.properties.patna as ResolvedCity;
+    expect(patna.price).toBe(2500);
+    expect(patna.mortgage).toBe(1250);
+    expect(patna.unmortgageCost).toBe(1375);
+    for (const m of [0.25, 0.5, 0.75, 1, 1.25, 1.5, 3]) {
+      for (const p of Object.values(resolveEconomy({ priceMultiplier: m }).properties)) {
+        expect(p.mortgage * 2).toBe(p.price);
+        expect(Number.isInteger(p.unmortgageCost)).toBe(true);
+      }
+    }
+  });
+
+  test("disabling a whole deck throws", () => {
+    const chance = BASE_CARDS.filter((c) => c.deck === "chance").map((c) => c.id);
+    expect(() => resolveEconomy({ disabledCardIds: chance })).toThrow(/chance/);
+    expect(() => resolveEconomy({ disabledCardIds: chance.slice(1) })).not.toThrow();
   });
 
   test("invalid settings throw", () => {
