@@ -9,7 +9,7 @@ import {
   type ClientMessage,
   type JoinOptions,
 } from "@rollbiz/shared";
-import { verifySupabaseToken } from "../auth/supabase";
+import { isJwksUnavailable, verifySupabaseToken } from "../auth/supabase";
 import { PASS_START_BONUS, RECONNECT_SECONDS, STARTING_CASH, move, rollDice } from "../game/rules";
 import { GameState, Player } from "./schema/GameState";
 
@@ -42,7 +42,11 @@ export class GameRoom extends Room<{ state: GameState; client: GameClient }> {
       const user = await verifySupabaseToken(parsed.data.accessToken);
       const name = (parsed.data.displayName ?? user.name ?? "Player").slice(0, MAX_NAME_LENGTH);
       return { userId: user.userId, name };
-    } catch {
+    } catch (err) {
+      // Log the reason (never the token) so a bad SUPABASE_URL or legacy signing key is visible.
+      const reason = err instanceof Error ? `${(err as { code?: string }).code ?? err.name}: ${err.message}` : String(err);
+      console.warn(`[auth] token rejected, ${reason}`);
+      if (isJwksUnavailable(err)) throw new ServerError(503, "auth service unavailable, try again");
       throw new ServerError(401, "invalid access token");
     }
   }

@@ -1,4 +1,4 @@
-import { createRemoteJWKSet, jwtVerify, type JWTPayload } from "jose";
+import { createRemoteJWKSet, errors, jwtVerify, type JWTPayload } from "jose";
 import { getEnv } from "../config/env";
 
 type SupabaseClaims = JWTPayload & {
@@ -21,6 +21,15 @@ function getJwks() {
 }
 
 /**
+ * True when verification failed because the key set couldn't be fetched (network
+ * error, timeout, bad response), not because the token itself is bad.
+ */
+export function isJwksUnavailable(err: unknown): boolean {
+  if (!(err instanceof errors.JOSEError)) return true;
+  return err.code === "ERR_JWKS_TIMEOUT" || err.code === "ERR_JOSE_GENERIC";
+}
+
+/**
  * Verifies a Supabase access token signed with the project's asymmetric
  * signing keys. Throws if the signature, issuer, audience or expiry is invalid.
  */
@@ -28,6 +37,8 @@ export async function verifySupabaseToken(token: string): Promise<VerifiedUser> 
   const { payload } = await jwtVerify<SupabaseClaims>(token, getJwks(), {
     issuer: `${getEnv().SUPABASE_URL}/auth/v1`,
     audience: "authenticated",
+    algorithms: ["ES256", "RS256"],
+    requiredClaims: ["exp", "sub"],
   });
 
   if (!payload.sub) throw new Error("token has no subject");
