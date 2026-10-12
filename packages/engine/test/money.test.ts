@@ -157,7 +157,7 @@ describe("state helpers", () => {
     expect(ps.owner).toBeNull();
     expect(() => getProperty(state, "start")).toThrow(RuleError);
     expect(() => getProperty(state, "nowhere")).toThrow(RuleError);
-    expect(tileAt(state, 9).id).toBe("jail");
+    expect(tileAt(state, 10).id).toBe("jail");
   });
 
   test("ownedBy returns property ids in board order", () => {

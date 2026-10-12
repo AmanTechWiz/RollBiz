@@ -26,10 +26,14 @@ describe("base config", () => {
 
   test("key tile positions", () => {
     expect(BASE_TILES[0]?.id).toBe("start");
-    expect(BASE_TILES[9]?.id).toBe("jail");
-    expect(BASE_TILES[18]?.id).toBe("rest-house");
+    expect(BASE_TILES[10]?.id).toBe("jail");
+    expect(BASE_TILES[20]?.id).toBe("rest-house");
     expect(BASE_TILES[30]?.id).toBe("club");
-    expect(BASE_TILES[39]?.id).toBe("digital-bharat-network");
+    expect(BASE_TILES[5]?.id).toBe("indian-railways");
+    expect(BASE_TILES[15]?.id).toBe("national-highways");
+    expect(BASE_TILES[25]?.id).toBe("indian-airways");
+    expect(BASE_TILES[35]?.id).toBe("coastal-shipping");
+    expect(BASE_TILES[39]?.id).toBe("mumbai-bkc");
   });
 
   test("every group has three cities", () => {

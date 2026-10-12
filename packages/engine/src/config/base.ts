@@ -3,48 +3,52 @@ import type { BaseCity, BaseGroup, BaseRules, BaseTile, BaseTransport, BaseUtili
 // Canonical, unscaled base configuration. Never mutate: resolveEconomy derives room values from it.
 // Source: docs/superpowers/specs/2026-10-12-bizbash-rules-design.md §4-9.
 
-/** 40 tiles in board order (index = position). */
+/**
+ * 40 tiles in board order (index = position). Square track: corners at 0, 10, 20, 30 with nine
+ * tiles per side; each side holds two colour groups, one transport and two other spaces, prices
+ * rising clockwise as on classic Indian business boards.
+ */
 export const BASE_TILES: readonly BaseTile[] = [
   { id: "start", name: "Start", kind: "start" },
   { id: "patna", name: "Patna", kind: "city", group: "brown" },
-  { id: "ranchi", name: "Ranchi", kind: "city", group: "brown" },
   { id: "community-chest-1", name: "Community Chest", kind: "communityChest" },
+  { id: "ranchi", name: "Ranchi", kind: "city", group: "brown" },
   { id: "raipur", name: "Raipur", kind: "city", group: "brown" },
-  { id: "income-tax", name: "Income Tax", kind: "incomeTax" },
+  { id: "indian-railways", name: "Indian Railways", kind: "transport" },
   { id: "lucknow", name: "Lucknow", kind: "city", group: "lightBlue" },
+  { id: "income-tax", name: "Income Tax", kind: "incomeTax" },
   { id: "bhopal", name: "Bhopal", kind: "city", group: "lightBlue" },
   { id: "indore", name: "Indore", kind: "city", group: "lightBlue" },
   { id: "jail", name: "Jail / Just Visiting", kind: "jail" },
   { id: "jaipur", name: "Jaipur", kind: "city", group: "pink" },
+  { id: "power-grid", name: "Power Grid", kind: "utility" },
   { id: "udaipur", name: "Udaipur", kind: "city", group: "pink" },
-  { id: "chance-1", name: "Chance", kind: "chance" },
   { id: "jodhpur", name: "Jodhpur", kind: "city", group: "pink" },
+  { id: "national-highways", name: "National Highways", kind: "transport" },
   { id: "ahmedabad", name: "Ahmedabad", kind: "city", group: "orange" },
+  { id: "chance-1", name: "Chance", kind: "chance" },
   { id: "surat", name: "Surat", kind: "city", group: "orange" },
   { id: "vadodara", name: "Vadodara", kind: "city", group: "orange" },
-  { id: "indian-railways", name: "Indian Railways", kind: "transport" },
   { id: "rest-house", name: "Rest House", kind: "restHouse" },
   { id: "hyderabad", name: "Hyderabad", kind: "city", group: "red" },
+  { id: "chance-2", name: "Chance", kind: "chance" },
   { id: "chennai", name: "Chennai", kind: "city", group: "red" },
   { id: "kolkata", name: "Kolkata", kind: "city", group: "red" },
-  { id: "community-chest-2", name: "Community Chest", kind: "communityChest" },
+  { id: "indian-airways", name: "Indian Airways", kind: "transport" },
   { id: "pune", name: "Pune", kind: "city", group: "yellow" },
   { id: "bengaluru", name: "Bengaluru", kind: "city", group: "yellow" },
+  { id: "digital-bharat-network", name: "Digital Bharat Network", kind: "utility" },
   { id: "ahmedabad-gift-city", name: "Ahmedabad GIFT City", kind: "city", group: "yellow" },
-  { id: "wealth-tax", name: "Wealth Tax", kind: "wealthTax" },
+  { id: "club", name: "Club", kind: "club" },
   { id: "gurugram", name: "Gurugram", kind: "city", group: "green" },
   { id: "noida", name: "Noida", kind: "city", group: "green" },
+  { id: "community-chest-2", name: "Community Chest", kind: "communityChest" },
   { id: "mumbai", name: "Mumbai", kind: "city", group: "green" },
-  { id: "club", name: "Club", kind: "club" },
+  { id: "coastal-shipping", name: "Coastal Shipping", kind: "transport" },
   { id: "new-delhi", name: "New Delhi", kind: "city", group: "darkBlue" },
+  { id: "wealth-tax", name: "Wealth Tax", kind: "wealthTax" },
   { id: "bengaluru-tech-park", name: "Bengaluru Tech Park", kind: "city", group: "darkBlue" },
   { id: "mumbai-bkc", name: "Mumbai BKC", kind: "city", group: "darkBlue" },
-  { id: "chance-2", name: "Chance", kind: "chance" },
-  { id: "national-highways", name: "National Highways", kind: "transport" },
-  { id: "power-grid", name: "Power Grid", kind: "utility" },
-  { id: "indian-airways", name: "Indian Airways", kind: "transport" },
-  { id: "coastal-shipping", name: "Coastal Shipping", kind: "transport" },
-  { id: "digital-bharat-network", name: "Digital Bharat Network", kind: "utility" },
 ];
 
 export const BASE_GROUPS: Readonly<Record<GroupId, BaseGroup>> = {

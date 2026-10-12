@@ -26,6 +26,11 @@ export function validateBaseConfig(): void {
   check(countKind(kinds, "incomeTax") + countKind(kinds, "wealthTax") === 2, "expected 2 tax tiles");
   const corners = ["start", "jail", "restHouse", "club"] as const;
   check(corners.every((k) => countKind(kinds, k) === 1), "expected 4 distinct corner tiles");
+  // Square board: the corners sit at 0, 10, 20 and 30.
+  check(
+    corners.every((k, i) => BASE_TILES[i * 10]?.kind === k),
+    "expected start, jail, rest house and club at positions 0, 10, 20 and 30",
+  );
 
   const groups = Object.values(BASE_GROUPS);
   check(groups.length === 8, "expected 8 groups");
