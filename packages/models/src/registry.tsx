@@ -26,7 +26,7 @@ export const MODELS: readonly ModelEntry[] = [
   pawn("green"),
   pawn("blue"),
   pawn("yellow"),
-  { id: "board", name: "Board", category: "board", Component: Board, viewDistance: 16 },
+  { id: "board", name: "Board", category: "board", Component: Board, viewDistance: 22 },
   { id: "card-chance", name: "Chance card", category: "card", Component: () => <EventCard cardId="CH05" faceUp />, viewDistance: 2.8 },
   { id: "card-chance-back", name: "Chance card (back)", category: "card", Component: () => <EventCard cardId="CH05" faceUp={false} />, viewDistance: 2.8 },
   { id: "card-community-chest", name: "Community Chest card", category: "card", Component: () => <EventCard cardId="CC10" faceUp />, viewDistance: 2.8 },
