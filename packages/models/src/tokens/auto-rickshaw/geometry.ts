@@ -91,7 +91,7 @@ function extrudeAcross(shape: Shape, width: number, bevel: number): ExtrudeGeome
 
 /** Roof line points (before bevel), rear to visor. Shared by the canopy and its seams. */
 const ROOF_LINE: [number, number][] = [
-  [-0.485, 0.6], [-0.47, 0.77], [-0.41, 0.86], [-0.25, 0.888], [0.0, 0.9], [0.2, 0.89], [0.3, 0.87], [0.355, 0.83], [0.37, 0.8],
+  [-0.485, 0.6], [-0.47, 0.77], [-0.41, 0.86], [-0.25, 0.888], [0.0, 0.9], [0.2, 0.89], [0.29, 0.872], [0.335, 0.85],
 ];
 
 /** Offsets a polyline that runs rear→front over the top along its outward (upper) normal. */
@@ -109,9 +109,6 @@ function canopy(): { shell: BufferGeometry; seams: BufferGeometry[] } {
   const line = new SplineCurve(ROOF_LINE.map(([x, y]) => new Vector2(x, y))).getPoints(80);
   const inner = offsetLine(line, BEVEL - 0.012);
   const outer = offsetLine(line, BEVEL + 0.022);
-  // visor: push the front end of the canopy forward over the screen
-  const tip = outer.at(-1)!;
-  outer.push(new Vector2(tip.x + 0.03, tip.y - 0.025));
   const shell = extrudeAcross(new Shape([...inner, ...outer.reverse()]), W + 0.03, 0.012);
 
   const seams = [-0.16, 0, 0.16].map((z) => {
@@ -231,9 +228,16 @@ export function buildRickshaw(): RickshawGeometry {
     const p = new Path();
     const [u0, u1] = side > 0 ? [0.022, 0.215] : [-0.215, -0.022];
     roundedRectPath(p, u0, 0.03, u1, screenLen - 0.02, 0.03);
-    glass.push(pane(p, onScreen()));
-    body.push(bead(p, 0.009, onScreen(0.008)));
+    glass.push(pane(p, onScreen(0.03)));
+    body.push(bead(p, 0.01, onScreen(0.036)));
   }
+  // Outer windscreen surround: a thick frame standing proud of the front, meeting the roof at its top.
+  const surround = new Path();
+  roundedRectPath(surround, -0.245, 0.0, 0.245, screenLen + 0.02, 0.05);
+  body.push(bead(surround, 0.022, onScreen(0.028)));
+  const backing = new Path();
+  roundedRectPath(backing, -0.24, 0.005, 0.24, screenLen + 0.015, 0.05);
+  body.push(pane(backing, onScreen(0.012)));
 
   // --- Front face: a nose column projecting forward, a lamp on it, lamps on both corners
   const nose = new Shape();
