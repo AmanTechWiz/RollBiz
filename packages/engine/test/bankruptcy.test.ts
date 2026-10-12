@@ -151,16 +151,20 @@ describe("declareBankruptcy to a player", () => {
     const housesBefore = state.bank.houses;
     const hotelsBefore = state.bank.hotels;
     const p3Before = player(state, "p3").cash;
+    const totalBefore = state.bank.cash + state.players.reduce((sum, p) => sum + p.cash, 0);
 
     const { state: next } = ok(state, "p2", { type: "declareBankruptcy" });
     for (const id of ["patna", "ranchi", "raipur"]) {
       expect(next.properties[id]).toMatchObject({ owner: "p3", houses: 0, hotel: false });
     }
-    // 50% of the cost refunded: 5 houses + a hotel (hotel sale refunds its own cost and 3 houses via downgrade)
-    expect(next.bank.houses).toBeGreaterThan(housesBefore);
+    // Brown houses cost 1000 and sell for 50%: 5 houses = 2500. The hotel refunds 50% of (1000 + 3 x 1000) = 2000.
+    const refunds = 5 * 500 + 2_000;
+    expect(next.bank.houses).toBe(housesBefore + 5);
     expect(next.bank.hotels).toBe(hotelsBefore + 1);
-    expect(player(next, "p3").cash).toBeGreaterThan(p3Before + 400);
+    expect(player(next, "p3").cash).toBe(p3Before + 400 + refunds);
     expect(player(next, "p2").cash).toBe(0);
+    // money is only moved, never created or lost
+    expect(next.bank.cash + next.players.reduce((sum, p) => sum + p.cash, 0)).toBe(totalBefore);
   });
 
   test("cannot declare bankruptcy without a debt", () => {
@@ -344,13 +348,35 @@ describe("forfeit", () => {
     };
     cash(state, "p2", 4_000);
     const { state: next } = forfeit(state, "p2");
-    if (next.pending?.kind === "auction") {
-      expect(next.pending.auction.highBidder).not.toBe("p2");
-      expect(next.pending.auction.bidders).not.toContain("p2");
-    } else {
-      expect(next.pending).toBeNull();
-    }
+    // the leaver's bid is voided, so the auction restarts among the others
+    expect(next.pending).toEqual({
+      kind: "auction",
+      auction: { tileId: "patna", highBid: 0, highBidder: null, bidders: ["p1", "p3"] },
+    });
     expect(player(next, "p2").bankrupt).toBe(true);
+  });
+
+  test("the turn holder forfeiting mid-auction: the auction goes on and the next player waits for it", () => {
+    const state = newGame({ players: 3 });
+    state.turn.hasRolled = true;
+    state.pending = {
+      kind: "auction",
+      auction: { tileId: "patna", highBid: 0, highBidder: null, bidders: ["p1", "p2", "p3"] },
+    };
+    const { state: next } = forfeit(state, "p1");
+    expect(next.pending).toEqual({
+      kind: "auction",
+      auction: { tileId: "patna", highBid: 0, highBidder: null, bidders: ["p2", "p3"] },
+    });
+    expect(next.turn.playerId).toBe("p2");
+    expect(err(next, "p2", { type: "roll" })).toBe("finish the open buy decision or auction first");
+
+    const bid = ok(next, "p2", { type: "bid", amount: 500 }).state;
+    const settled = ok(bid, "p3", { type: "passAuction" }).state;
+    expect(settled.pending).toBeNull();
+    expect(settled.properties.patna?.owner).toBe("p2");
+    expect(player(settled, "p2").cash).toBe(20_000 - 500);
+    ok(settled, "p2", { type: "roll" });
   });
 
   test("holding the turn during a debt cascade: the new turn holder still waits for debts", () => {
@@ -372,6 +398,18 @@ describe("game end", () => {
     expect(next.status).toBe("finished");
     expect(next.winnerId).toBe("p1");
     expect(events).toContainEqual({ type: "gameOver", winnerId: "p1", reason: "elimination" });
+  });
+
+  test("elimination clears an open auction or buy decision", () => {
+    const state = newGame();
+    state.pending = {
+      kind: "auction",
+      auction: { tileId: "patna", highBid: 0, highBidder: null, bidders: ["p1", "p2"] },
+    };
+    expect(forfeit(state, "p2").state.pending).toBeNull();
+    const buying = newGame();
+    buying.pending = { kind: "buy", tileId: "patna" };
+    expect(forfeit(buying, "p1").state.pending).toBeNull();
   });
 
   test("elimination through declared bankruptcy", () => {

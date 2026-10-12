@@ -118,6 +118,7 @@ function bankrupt(ctx: Ctx, playerId: PlayerId, creditor: Party): void {
     const winner = remaining[0]?.id ?? null;
     state.status = "finished";
     state.winnerId = winner;
+    state.pending = null;
     ctx.emit({ type: "gameOver", winnerId: winner, reason: "elimination" });
     return;
   }
