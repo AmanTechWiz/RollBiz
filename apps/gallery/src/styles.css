@@ -1,0 +1,60 @@
+/* Modern Nintendo system-UI feel: light grey canvas, white rounded tiles,
+   a cyan selection ring that pops on hover, bold rounded type. */
+:root {
+  --bg: #ebebeb;
+  --tile: #ffffff;
+  --ink: #2d2d2d;
+  --muted: #7a7a7a;
+  --accent: #00c3e3;
+  --radius: 18px;
+  font-family: "Nunito", "Segoe UI", system-ui, sans-serif;
+  color: var(--ink);
+  background: var(--bg);
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; }
+button { font: inherit; color: inherit; }
+
+.home { position: relative; min-height: 100dvh; padding: 32px clamp(16px, 4vw, 48px) 64px; }
+.home-header h1 { margin: 0; font-size: 28px; font-weight: 800; letter-spacing: -0.02em; }
+.home-header p { margin: 4px 0 0; color: var(--muted); }
+section h2 { margin: 32px 0 12px; font-size: 15px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 18px; }
+
+.tile {
+  position: relative; display: flex; flex-direction: column; padding: 0; border: 0; cursor: pointer;
+  background: var(--tile); border-radius: var(--radius); overflow: hidden;
+  box-shadow: 0 2px 6px rgb(0 0 0 / 0.08);
+  transition: transform 160ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 160ms;
+}
+.tile:hover, .tile:focus-visible { transform: scale(1.04); box-shadow: 0 0 0 4px var(--accent), 0 10px 24px rgb(0 0 0 / 0.14); outline: none; }
+.tile:active { transform: scale(0.98); }
+.tile-view { width: 100%; aspect-ratio: 1; }
+.tile-label { padding: 10px 14px 14px; text-align: left; font-weight: 700; font-size: 15px; }
+
+/* The shared canvas sits on top of the page; Views scissor into each tile. */
+.views-canvas { position: fixed !important; inset: 0; pointer-events: none; }
+
+.inspector { position: fixed; inset: 0; background: #eceef1; }
+.inspector.dark { background: #1d1f24; color: #f2f2f2; }
+.inspector-bar {
+  position: absolute; left: 16px; right: 16px; top: 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px;
+  padding: 10px 14px; border-radius: var(--radius); background: rgb(255 255 255 / 0.85); backdrop-filter: blur(12px);
+  box-shadow: 0 4px 16px rgb(0 0 0 / 0.1); color: var(--ink);
+}
+.inspector-bar h2 { margin: 0; font-size: 18px; font-weight: 800; }
+.toggles { display: flex; gap: 6px; margin-left: auto; }
+.stats { width: 100%; margin: 0; font-size: 13px; color: var(--muted); }
+.pill {
+  border: 0; border-radius: 999px; padding: 8px 16px; font-weight: 700; cursor: pointer; background: #f1f1f1;
+  transition: transform 140ms cubic-bezier(0.34, 1.56, 0.64, 1), background 140ms;
+}
+.pill:hover { transform: scale(1.06); }
+.pill.on { background: var(--accent); color: #fff; }
+.reference {
+  position: absolute; right: 16px; bottom: 16px; width: min(420px, 45vw); border-radius: var(--radius);
+  box-shadow: 0 6px 20px rgb(0 0 0 / 0.18); background: #fff;
+}
+.inspector.shot .reference, .inspector.shot .inspector-bar { display: none; }
