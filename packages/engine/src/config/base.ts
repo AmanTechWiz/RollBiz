@@ -52,10 +52,10 @@ export const BASE_TILES: readonly BaseTile[] = [
 ];
 
 export const BASE_GROUPS: Readonly<Record<GroupId, BaseGroup>> = {
-  brown: { id: "brown", name: "Brown", houseCost: 1000, hotelCost: 1000 },
-  lightBlue: { id: "lightBlue", name: "Light Blue", houseCost: 1000, hotelCost: 1000 },
+  brown: { id: "brown", name: "Orange", houseCost: 1000, hotelCost: 1000 },
+  lightBlue: { id: "lightBlue", name: "Purple", houseCost: 1000, hotelCost: 1000 },
   pink: { id: "pink", name: "Pink", houseCost: 1500, hotelCost: 1500 },
-  orange: { id: "orange", name: "Orange", houseCost: 1500, hotelCost: 1500 },
+  orange: { id: "orange", name: "Sky Blue", houseCost: 1500, hotelCost: 1500 },
   red: { id: "red", name: "Red", houseCost: 2000, hotelCost: 2000 },
   yellow: { id: "yellow", name: "Yellow", houseCost: 2000, hotelCost: 2000 },
   green: { id: "green", name: "Green", houseCost: 2500, hotelCost: 2500 },

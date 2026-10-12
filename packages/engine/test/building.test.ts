@@ -90,7 +90,7 @@ describe("build", () => {
   test("requires owning the whole group", () => {
     const state = setup();
     own(state, "p2", ["raipur"]);
-    expect(reject(state, "p1", { type: "build", tileId: "patna" })).toBe("you must own the whole Brown group to build");
+    expect(reject(state, "p1", { type: "build", tileId: "patna" })).toBe("you must own the whole Orange group to build");
   });
 
   test("cannot build on a property you do not own", () => {
