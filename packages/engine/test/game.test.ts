@@ -85,11 +85,11 @@ describe("createGame", () => {
   test("player count and id validation", () => {
     const eco = resolveEconomy();
     expect(() => createGame(eco, [{ id: "a", name: "A" }], seededRng(), 0)).toThrow();
-    const seven = Array.from({ length: 7 }, (_, i) => ({ id: `p${i}`, name: "x" }));
-    expect(() => createGame(eco, seven, seededRng(), 0)).toThrow();
+    const five = Array.from({ length: 5 }, (_, i) => ({ id: `p${i}`, name: "x" }));
+    expect(() => createGame(eco, five, seededRng(), 0)).toThrow();
     expect(() => createGame(eco, [{ id: "a", name: "A" }, { id: "a", name: "B" }], seededRng(), 0)).toThrow();
-    const six = seven.slice(0, 6);
-    expect(createGame(eco, six, seededRng(), 0).state.players).toHaveLength(6);
+    const four = five.slice(0, 4);
+    expect(createGame(eco, four, seededRng(), 0).state.players).toHaveLength(4);
   });
 });
 

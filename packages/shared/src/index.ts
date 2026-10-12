@@ -4,7 +4,7 @@ import { z } from "zod";
 export const GAME_ROOM = "game";
 
 export const MIN_PLAYERS = 2;
-export const MAX_PLAYERS = 6;
+export const MAX_PLAYERS = 4;
 
 // Options a client sends when creating or joining a room.
 // `accessToken` is the Supabase session JWT; the server verifies it in onAuth.

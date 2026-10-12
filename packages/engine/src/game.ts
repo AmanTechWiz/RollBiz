@@ -3,7 +3,7 @@ import { pay } from "./core/money";
 import type { CardId, GameEvent, GameState, PlayerId, PropertyState, ResolvedEconomy, Rng } from "./types";
 
 const MIN_PLAYERS = 2;
-const MAX_PLAYERS = 6;
+const MAX_PLAYERS = 4;
 
 /** Fisher-Yates on a copy. */
 function shuffled<T>(items: readonly T[], rng: Rng): T[] {
