@@ -58,7 +58,7 @@ Single source of truth, kept separate:
 
 ## 4. Default Board: 40 Tiles (clockwise from index 0)
 
-Square track (owner decision 2026-10-12: "choose the best order, as Indian board games do"). Corners at 0, 10, 20, 30; each side has nine tiles: two colour groups, one transport in the middle, and two other spaces. Prices rise clockwise.
+Square track (owner decision 2026-10-12: "choose the best order, as Indian board games do"). Corners at 0, 10, 20, 30; each side has nine tiles: two colour groups, one transport in the middle, and two other spaces. Prices rise clockwise. City names and tiers set by the owner on 2026-10-12: regional cities first, tourist spots (Ooty, Darjeeling, Srinagar, Goa) on the higher side, metros and NCR at the top.
 
 | # | Tile | Category |
 |---|---|---|
@@ -68,40 +68,40 @@ Square track (owner decision 2026-10-12: "choose the best order, as Indian board
 | 3 | Ranchi | Brown |
 | 4 | Raipur | Brown |
 | 5 | Indian Railways | Transport |
-| 6 | Lucknow | Light Blue |
+| 6 | Bhopal | Light Blue |
 | 7 | Income Tax | Tax |
-| 8 | Bhopal | Light Blue |
+| 8 | Nagpur | Light Blue |
 | 9 | Indore | Light Blue |
 | 10 | Jail / Just Visiting | Corner |
-| 11 | Jaipur | Pink |
+| 11 | Lucknow | Pink |
 | 12 | Power Grid | Utility |
-| 13 | Udaipur | Pink |
-| 14 | Jodhpur | Pink |
+| 13 | Surat | Pink |
+| 14 | Jaipur | Pink |
 | 15 | National Highways | Transport |
-| 16 | Ahmedabad | Orange |
+| 16 | Chandigarh | Orange |
 | 17 | Chance | Event |
-| 18 | Surat | Orange |
-| 19 | Vadodara | Orange |
+| 18 | Ahmedabad | Orange |
+| 19 | Ooty | Orange |
 | 20 | Rest House | Corner |
-| 21 | Hyderabad | Red |
+| 21 | Darjeeling | Red |
 | 22 | Chance | Event |
-| 23 | Chennai | Red |
-| 24 | Kolkata | Red |
+| 23 | Srinagar | Red |
+| 24 | Goa | Red |
 | 25 | Indian Airways | Transport |
-| 26 | Pune | Yellow |
-| 27 | Bengaluru | Yellow |
+| 26 | Noida | Yellow |
+| 27 | Gurugram | Yellow |
 | 28 | Digital Bharat Network | Utility |
-| 29 | Ahmedabad GIFT City | Yellow |
+| 29 | Pune | Yellow |
 | 30 | Club | Corner |
-| 31 | Gurugram | Green |
-| 32 | Noida | Green |
+| 31 | Hyderabad | Green |
+| 32 | Kolkata | Green |
 | 33 | Community Chest | Event |
-| 34 | Mumbai | Green |
+| 34 | Chennai | Green |
 | 35 | Coastal Shipping | Transport |
-| 36 | New Delhi | Dark Blue |
+| 36 | Bengaluru | Dark Blue |
 | 37 | Wealth Tax | Tax |
-| 38 | Bengaluru Tech Park | Dark Blue |
-| 39 | Mumbai BKC | Dark Blue |
+| 38 | New Delhi | Dark Blue |
+| 39 | Mumbai | Dark Blue |
 
 24 city properties, 4 transport, 2 utilities, 2 Chance, 2 Community Chest, 2 taxes, 4 corners. Verify counts and corner positions programmatically.
 
@@ -112,27 +112,27 @@ Square track (owner decision 2026-10-12: "choose the best order, as Indian board
 | Brown | Patna | 2000 | 200 | 600 | 1000 | 1600 | 2400 | 1000 |
 | Brown | Ranchi | 2400 | 240 | 720 | 1200 | 1920 | 2880 | 1200 |
 | Brown | Raipur | 2800 | 280 | 840 | 1400 | 2240 | 3360 | 1400 |
-| Light Blue | Lucknow | 3200 | 320 | 960 | 1600 | 2560 | 3840 | 1600 |
-| Light Blue | Bhopal | 3600 | 360 | 1080 | 1800 | 2880 | 4320 | 1800 |
+| Light Blue | Bhopal | 3200 | 320 | 960 | 1600 | 2560 | 3840 | 1600 |
+| Light Blue | Nagpur | 3600 | 360 | 1080 | 1800 | 2880 | 4320 | 1800 |
 | Light Blue | Indore | 4000 | 400 | 1200 | 2000 | 3200 | 4800 | 2000 |
-| Pink | Jaipur | 4400 | 440 | 1320 | 2200 | 3520 | 5280 | 2200 |
-| Pink | Udaipur | 4800 | 480 | 1440 | 2400 | 3840 | 5760 | 2400 |
-| Pink | Jodhpur | 5200 | 520 | 1560 | 2600 | 4160 | 6240 | 2600 |
-| Orange | Ahmedabad | 5600 | 560 | 1680 | 2800 | 4480 | 6720 | 2800 |
-| Orange | Surat | 6000 | 600 | 1800 | 3000 | 4800 | 7200 | 3000 |
-| Orange | Vadodara | 6400 | 640 | 1920 | 3200 | 5120 | 7680 | 3200 |
-| Red | Hyderabad | 6800 | 680 | 2040 | 3400 | 5440 | 8160 | 3400 |
-| Red | Chennai | 7200 | 720 | 2160 | 3600 | 5760 | 8640 | 3600 |
-| Red | Kolkata | 7600 | 760 | 2280 | 3800 | 6080 | 9120 | 3800 |
-| Yellow | Pune | 8000 | 800 | 2400 | 4000 | 6400 | 9600 | 4000 |
-| Yellow | Bengaluru | 8400 | 840 | 2520 | 4200 | 6720 | 10080 | 4200 |
-| Yellow | Ahmedabad GIFT City | 8800 | 880 | 2640 | 4400 | 7040 | 10560 | 4400 |
-| Green | Gurugram | 9200 | 920 | 2760 | 4600 | 7360 | 11040 | 4600 |
-| Green | Noida | 9600 | 960 | 2880 | 4800 | 7680 | 11520 | 4800 |
-| Green | Mumbai | 10000 | 1000 | 3000 | 5000 | 8000 | 12000 | 5000 |
-| Dark Blue | New Delhi | 11000 | 1100 | 3300 | 5500 | 8800 | 13200 | 5500 |
-| Dark Blue | Bengaluru Tech Park | 12000 | 1200 | 3600 | 6000 | 9600 | 14400 | 6000 |
-| Dark Blue | Mumbai BKC | 13000 | 1300 | 3900 | 6500 | 10400 | 15600 | 6500 |
+| Pink | Lucknow | 4400 | 440 | 1320 | 2200 | 3520 | 5280 | 2200 |
+| Pink | Surat | 4800 | 480 | 1440 | 2400 | 3840 | 5760 | 2400 |
+| Pink | Jaipur | 5200 | 520 | 1560 | 2600 | 4160 | 6240 | 2600 |
+| Orange | Chandigarh | 5600 | 560 | 1680 | 2800 | 4480 | 6720 | 2800 |
+| Orange | Ahmedabad | 6000 | 600 | 1800 | 3000 | 4800 | 7200 | 3000 |
+| Orange | Ooty | 6400 | 640 | 1920 | 3200 | 5120 | 7680 | 3200 |
+| Red | Darjeeling | 6800 | 680 | 2040 | 3400 | 5440 | 8160 | 3400 |
+| Red | Srinagar | 7200 | 720 | 2160 | 3600 | 5760 | 8640 | 3600 |
+| Red | Goa | 7600 | 760 | 2280 | 3800 | 6080 | 9120 | 3800 |
+| Yellow | Noida | 8000 | 800 | 2400 | 4000 | 6400 | 9600 | 4000 |
+| Yellow | Gurugram | 8400 | 840 | 2520 | 4200 | 6720 | 10080 | 4200 |
+| Yellow | Pune | 8800 | 880 | 2640 | 4400 | 7040 | 10560 | 4400 |
+| Green | Hyderabad | 9200 | 920 | 2760 | 4600 | 7360 | 11040 | 4600 |
+| Green | Kolkata | 9600 | 960 | 2880 | 4800 | 7680 | 11520 | 4800 |
+| Green | Chennai | 10000 | 1000 | 3000 | 5000 | 8000 | 12000 | 5000 |
+| Dark Blue | Bengaluru | 11000 | 1100 | 3300 | 5500 | 8800 | 13200 | 5500 |
+| Dark Blue | New Delhi | 12000 | 1200 | 3600 | 6000 | 9600 | 14400 | 6000 |
+| Dark Blue | Mumbai | 13000 | 1300 | 3900 | 6500 | 10400 | 15600 | 6500 |
 
 Building costs by group (per house / hotel upgrade): Brown 1000/1000, Light Blue 1000/1000, Pink 1500/1500, Orange 1500/1500, Red 2000/2000, Yellow 2000/2000, Green 2500/2500, Dark Blue 3000/3000.
 
