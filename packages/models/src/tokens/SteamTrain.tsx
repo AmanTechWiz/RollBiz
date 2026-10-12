@@ -12,7 +12,8 @@ import {
   TorusGeometry,
   Vector2,
 } from "three";
-import { pewter, pewterDark } from "../materials";
+import { MeshStandardMaterial } from "three";
+import { pewterDark } from "../materials";
 import { at, mergeAll, place } from "./geoKit";
 
 /**
@@ -23,7 +24,8 @@ import { at, mergeAll, place } from "./geoKit";
 const AXLE_Y = 0.07;
 const WHEEL_R = 0.066;
 const WHEEL_Z = 0.15;
-const WHEEL_X = [-0.19, -0.065, 0.06, 0.185];
+// 0.145 apart: wider than a wheel's 0.14 flange diameter so neighbours never touch
+const WHEEL_X = [-0.2175, -0.0725, 0.0725, 0.2175];
 const PIN_R = 0.026;
 const PIN_ANGLE = (38 * Math.PI) / 180;
 
@@ -143,12 +145,13 @@ function cabRoof(): BufferGeometry {
 function build() {
   const light: BufferGeometry[] = [];
   const dark: BufferGeometry[] = [];
+  const flat: BufferGeometry[] = []; // flat panels: cab, roof, chassis, pilot
 
   // chassis frame, axles, running boards
-  light.push(box(0.7, 0.05, 0.2, -0.015, 0.1, 0));
+  flat.push(box(0.7, 0.05, 0.2, -0.015, 0.1, 0));
   for (const x of WHEEL_X) dark.push(cylZ(0.008, 0.008, 0.33, x, AXLE_Y, 0, 10));
   for (const sg of [1, -1]) {
-    light.push(box(0.65, 0.011, 0.045, -0.02, 0.157, sg * 0.14)); // running board
+    flat.push(box(0.65, 0.011, 0.045, -0.02, 0.157, sg * 0.14)); // running board
     light.push(box(0.65, 0.007, 0.01, -0.02, 0.1625, sg * 0.162)); // board lip
     for (const x of WHEEL_X) buildWheel(light, dark, x, sg);
     // coupling rod and bosses
@@ -175,7 +178,7 @@ function build() {
     // cab side wall
     const wall = cabSideWall();
     wall.translate(0, 0, sg > 0 ? 0.119 : -0.131);
-    light.push(wall);
+    flat.push(wall);
     // window frames (raised bead round each opening)
     for (const cx of [-0.278, -0.17]) {
       const w = 0.03;
@@ -191,16 +194,16 @@ function build() {
   }
 
   // cab: front/back walls, dark interior, roof
-  light.push(box(0.012, 0.28, 0.25, -0.106, 0.29, 0));
-  light.push(box(0.012, 0.282, 0.25, -0.339, 0.291, 0));
+  flat.push(box(0.012, 0.28, 0.25, -0.106, 0.29, 0));
+  flat.push(box(0.012, 0.282, 0.25, -0.339, 0.291, 0));
   dark.push(box(0.21, 0.255, 0.215, -0.222, 0.29, 0));
   light.push(box(0.245, 0.01, 0.26, -0.222, 0.152, 0)); // floor
-  light.push(cabRoof());
+  flat.push(cabRoof());
   // back-wall opening hint and lamp
-  dark.push(box(0.003, 0.1, 0.08, -0.346, 0.26, 0));
+  dark.push(box(0.002, 0.1, 0.08, -0.3475, 0.26, 0)); // offset off the wall face to avoid z-fighting
   light.push(box(0.03, 0.008, 0.04, -0.34, 0.425, 0)); // roof vent
   // rear buffer beam, buffers
-  light.push(box(0.022, 0.04, 0.3, -0.352, 0.13, 0));
+  flat.push(box(0.022, 0.04, 0.3, -0.352, 0.13, 0));
   for (const sg of [1, -1]) {
     light.push(cylX(0.012, 0.012, 0.03, -0.378, 0.135, sg * 0.1, 14));
     light.push(cylX(0.024, 0.024, 0.008, -0.396, 0.135, sg * 0.1, 18));
@@ -256,7 +259,7 @@ function build() {
   light.push(new CylinderGeometry(0.008, 0.01, 0.03, 10).translate(0.205, BOILER_Y + BOILER_R + 0.01, 0));
 
   // pilot (cowcatcher): beam, side plates, slats
-  light.push(box(0.03, 0.045, 0.3, 0.335, 0.148, 0));
+  flat.push(box(0.03, 0.045, 0.3, 0.335, 0.148, 0));
   const plate = new Shape();
   plate.moveTo(0.34, 0.14);
   plate.lineTo(0.34, 0.054);
@@ -266,12 +269,12 @@ function build() {
   for (const sg of [1, -1]) {
     const g = new ExtrudeGeometry(plate, { depth: 0.01, bevelEnabled: false });
     g.translate(0, 0, sg > 0 ? 0.14 : -0.15);
-    light.push(g);
+    flat.push(g);
   }
   const NS = 12;
   for (let k = 0; k < NS; k++) {
     const z = -0.126 + (0.252 * k) / (NS - 1);
-    light.push(bar(0.345, 0.126, 0.428, 0.052, 0.013, 0.012, z));
+    flat.push(bar(0.345, 0.126, 0.428, 0.052, 0.013, 0.012, z));
   }
   light.push(box(0.008, 0.012, 0.28, 0.43, 0.06, 0)); // front rail
   light.push(bar(0.37, 0.104, 0.4, 0.08, 0.007, 0.28, 0).translate(0, 0, 0)); // crossbar
@@ -285,22 +288,32 @@ function build() {
 
   const a = mergeAll(light);
   const b = mergeAll(dark);
+  const c = mergeAll(flat);
+  // centre on the combined bounds, resting on y = 0
   a.computeBoundingBox();
-  const box3 = a.boundingBox!;
+  c.computeBoundingBox();
+  const box3 = a.boundingBox!.union(c.boundingBox!);
   const dx = -(box3.min.x + box3.max.x) / 2;
   const dy = -box3.min.y;
-  a.translate(dx, dy, 0);
-  b.translate(dx, dy, 0);
-  a.scale(FIT, FIT, FIT);
-  b.scale(FIT, FIT, FIT);
-  return { light: a, dark: b };
+  for (const g of [a, b, c]) {
+    g.translate(dx, dy, 0);
+    g.scale(FIT, FIT, FIT);
+  }
+  return { light: a, dark: b, flat: c };
 }
 
+// Satin pewter (as on the auto-rickshaw): rough enough to catch highlights instead of
+// mirroring one dark slice of the environment.
+const satin = new MeshStandardMaterial({ color: "#c9ccd0", metalness: 0.78, roughness: 0.3, envMapIntensity: 1.1 });
+// Flat panels get a brighter, softer pewter so they read as polished metal rather than dark slabs.
+const panel = new MeshStandardMaterial({ color: "#d6d9dd", metalness: 0.6, roughness: 0.36, envMapIntensity: 1.3 });
+
 export function SteamTrain() {
-  const { light, dark } = useMemo(build, []);
+  const { light, dark, flat } = useMemo(build, []);
   return (
     <group>
-      <mesh geometry={light} material={pewter} castShadow receiveShadow />
+      <mesh geometry={light} material={satin} castShadow receiveShadow />
+      <mesh geometry={flat} material={panel} castShadow receiveShadow />
       <mesh geometry={dark} material={pewterDark} castShadow />
     </group>
   );
