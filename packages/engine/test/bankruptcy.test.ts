@@ -431,7 +431,7 @@ describe("game end", () => {
 
   test("timeUp: the highest net worth wins", () => {
     const state = newGame({ players: 3 });
-    own(state, "mumbai-bkc", "p3", { mortgaged: true }); // +6500
+    own(state, "mumbai", "p3", { mortgaged: true }); // +6500
     own(state, "indian-railways", "p2"); // +7000
     cash(state, "p1", 20_000);
     const result = applySystemAction(state, { type: "timeUp" }, seededRng(5));

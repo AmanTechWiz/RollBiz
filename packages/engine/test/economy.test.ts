@@ -21,7 +21,7 @@ describe("resolveEconomy", () => {
     expect(patna.rents).toEqual([200, 600, 1000, 1600, 2400]);
     expect(patna.mortgage).toBe(1000);
     expect(patna.unmortgageCost).toBe(1100);
-    expect((e.properties["mumbai-bkc"] as ResolvedCity).houseCost).toBe(3000);
+    expect((e.properties["mumbai"] as ResolvedCity).houseCost).toBe(3000);
     expect(e.startingMoney).toBe(20_000);
     expect(e.bank).toEqual({ cash: 1_000_000, houses: 32, hotels: 12 });
     expect(e.rules.startBonus).toBe(2000);

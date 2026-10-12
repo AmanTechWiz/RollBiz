@@ -170,7 +170,7 @@ describe("movement cards", () => {
     expectRotated(t, "CH11");
 
     const u = setup("CH11", 10);
-    owner(u.state, "jaipur", "p2"); // 11 owned; 12 is a utility
+    owner(u.state, "lucknow", "p2"); // 11 owned; 12 is a utility
     draw(u);
     expect(p(u.state, "p1").position).toBe(13);
 

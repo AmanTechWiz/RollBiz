@@ -12,7 +12,7 @@ import type { GameState, PlayerId, TileId } from "../src/types";
 import { act, makeCtx, newGame, seededRng } from "./helpers";
 
 const BROWN = ["patna", "ranchi", "raipur"];
-const LIGHT_BLUE = ["lucknow", "bhopal", "indore"];
+const LIGHT_BLUE = ["bhopal", "nagpur", "indore"];
 
 function own(state: GameState, playerId: PlayerId, tiles: TileId[]): void {
   for (const t of tiles) {
@@ -96,7 +96,7 @@ describe("build", () => {
   test("cannot build on a property you do not own", () => {
     const state = setup();
     own(state, "p2", LIGHT_BLUE);
-    expect(reject(state, "p1", { type: "build", tileId: "lucknow" })).toBe("you do not own that property");
+    expect(reject(state, "p1", { type: "build", tileId: "bhopal" })).toBe("you do not own that property");
   });
 
   test("only city properties can be built on", () => {
@@ -206,7 +206,7 @@ describe("build", () => {
   test("not your turn, and not during a pending decision", () => {
     const state = setup();
     own(state, "p2", LIGHT_BLUE);
-    expect(reject(state, "p2", { type: "build", tileId: "lucknow" })).toBe("it is not your turn");
+    expect(reject(state, "p2", { type: "build", tileId: "bhopal" })).toBe("it is not your turn");
     state.pending = { kind: "buy", tileId: "jaipur" };
     expect(reject(state, "p1", { type: "build", tileId: "patna" })).toBe("finish the open buy decision or auction first");
   });
@@ -458,8 +458,8 @@ describe("liquidateAllBuildings, countBuildings, groupHasBuildings", () => {
     setLevel(state, "patna", 4);
     setLevel(state, "ranchi", 4);
     setLevel(state, "raipur", 4);
-    setLevel(state, "lucknow", 2);
-    setLevel(state, "bhopal", 1);
+    setLevel(state, "bhopal", 2);
+    setLevel(state, "nagpur", 1);
     setLevel(state, "indore", 1);
     const start = inventory(state);
     const before = cash(state, "p1");
@@ -475,7 +475,7 @@ describe("liquidateAllBuildings, countBuildings, groupHasBuildings", () => {
   test("returns 0 when there is nothing to liquidate and ignores other players' buildings", () => {
     const state = setup();
     own(state, "p2", LIGHT_BLUE);
-    setLevel(state, "lucknow", 2);
+    setLevel(state, "bhopal", 2);
     const ctx = makeCtx(state);
     expect(liquidateAllBuildings(ctx, "p1")).toBe(0);
     expect(countBuildings(state, "p2")).toEqual({ houses: 2, hotels: 0 });
@@ -488,7 +488,7 @@ describe("liquidateAllBuildings, countBuildings, groupHasBuildings", () => {
     setLevel(state, "patna", 4);
     setLevel(state, "ranchi", 3);
     setLevel(state, "raipur", 3);
-    setLevel(state, "lucknow", 1);
+    setLevel(state, "bhopal", 1);
     expect(countBuildings(state, "p1")).toEqual({ houses: 7, hotels: 1 });
     expect(countBuildings(state, "p2")).toEqual({ houses: 0, hotels: 0 });
   });

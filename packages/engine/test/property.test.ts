@@ -8,13 +8,13 @@ import { act, makeCtx, newGame } from "./helpers";
 // One city per group: [tile, group, base, 1H, 2H, 3H, hotel] straight from the spec table (§5).
 const CITIES: [TileId, GroupId, number[]][] = [
   ["patna", "brown", [200, 600, 1000, 1600, 2400]],
-  ["lucknow", "lightBlue", [320, 960, 1600, 2560, 3840]],
-  ["jaipur", "pink", [440, 1320, 2200, 3520, 5280]],
-  ["ahmedabad", "orange", [560, 1680, 2800, 4480, 6720]],
-  ["hyderabad", "red", [680, 2040, 3400, 5440, 8160]],
-  ["pune", "yellow", [800, 2400, 4000, 6400, 9600]],
-  ["gurugram", "green", [920, 2760, 4600, 7360, 11040]],
-  ["new-delhi", "darkBlue", [1100, 3300, 5500, 8800, 13200]],
+  ["bhopal", "lightBlue", [320, 960, 1600, 2560, 3840]],
+  ["lucknow", "pink", [440, 1320, 2200, 3520, 5280]],
+  ["chandigarh", "orange", [560, 1680, 2800, 4480, 6720]],
+  ["darjeeling", "red", [680, 2040, 3400, 5440, 8160]],
+  ["noida", "yellow", [800, 2400, 4000, 6400, 9600]],
+  ["hyderabad", "green", [920, 2760, 4600, 7360, 11040]],
+  ["bengaluru", "darkBlue", [1100, 3300, 5500, 8800, 13200]],
 ];
 
 /** 1.5x rounds every scaled amount to the nearest 100 (spec decision 3). */
@@ -186,11 +186,11 @@ describe("landOnProperty", () => {
 
   test("rent you cannot afford becomes a debt", () => {
     const state = newGame();
-    own(state, "new-delhi", "p2");
-    state.properties["new-delhi"]!.hotel = true;
+    own(state, "bengaluru", "p2");
+    state.properties["bengaluru"]!.hotel = true;
     state.players[0]!.cash = 1000;
     const ctx = makeCtx(state);
-    landOnProperty(ctx, "p1", "new-delhi", 7);
+    landOnProperty(ctx, "p1", "bengaluru", 7);
     expect(state.players[0]!.cash).toBe(1000);
     expect(state.players[1]!.cash).toBe(20_000);
     expect(state.debts).toHaveLength(1);
