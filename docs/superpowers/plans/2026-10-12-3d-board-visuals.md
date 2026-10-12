@@ -1,6 +1,6 @@
 # 3D Board, Island and Tokens: Plan
 
-Status: draft for review. Nothing here is built yet beyond installing three.js, @react-three/fiber and @react-three/drei in `apps/web`.
+Status: decisions settled (see below). Nothing here is built yet beyond installing three.js, @react-three/fiber and @react-three/drei in `apps/web`.
 
 ## What we're making
 
@@ -23,7 +23,7 @@ A playful, Nintendo-style 3D game table on a phone:
   - `moved` hops the token tile by tile, `rolled` tumbles the dice, `cardDrawn` flips the card.
   - When the queue is empty, the scene snaps to the authoritative state, so it can never drift from the server.
 - **Dice must land on the server's numbers.** The dice tumble is scripted (or physics with a final ease into the known face), never free physics deciding the result.
-- **Camera:** a tilted 3/4 view of the whole board. Tap a tile to zoom to it; pinch or drag to orbit within limits; auto-focus on the moving token.
+- **Camera (decided):** a fixed top-down view of the whole board while nothing is moving. When a token moves (or a dice or card moment plays), a cinematic shot eases in, follows the action at a low angle, then eases back to the top view. No free orbit.
 
 ```
 apps/web/src/scene/
@@ -31,7 +31,7 @@ apps/web/src/scene/
   board/               # board ring mesh + tile textures from engine tiles
   island/              # island diorama, landmarks, props, lighting rig
   water/               # stylised water shader, wake trails, critters on paths
-  tokens/              # token themes: Indian (GLB) + classic (procedural pawns)
+  tokens/              # code-built tokens: Indian (pewter) + classic (pawns), token picker
   dice/                # 3D dice, scripted roll to a given result
   fx/                  # coins, confetti, stamp, gavel, jail bars, card flip
   anim/                # event queue: GameEvent -> timeline -> done
@@ -55,25 +55,27 @@ apps/web/src/scene/
 - **Water:** a toon shader with animated foam at the shoreline. Instanced tiny jet skis on spline paths with wake trails, dolphins on arc paths at random intervals, a ferry between two piers.
 - **Kept cheap:** instancing, merged static meshes, and simple path animations (no physics).
 
-## Tokens
+## Tokens (decided)
+
+Four players max, so each theme has exactly four tokens. Each player picks any token from either theme (no duplicates in a room), so a table can mix them.
 
 | Theme | Pieces | How |
 |---|---|---|
-| Indian | auto-rickshaw, scooter, elephant, steam train, **+2 needed** | GLB models made from the reference art with an image-to-3D tool (Meshy, Tripo, Rodin or Hunyuan3D), then cleaned and compressed |
-| Classic | red, green, blue, yellow pawns, **+2 needed** | Procedural: a lathe geometry pawn in code, so no asset files and any colour |
+| Indian | auto-rickshaw, scooter, elephant, steam train | Modelled in code with three.js (see below), pewter material |
+| Classic | red, green, blue, yellow pawns | Modelled in code: a lathe pawn profile, glossy plastic |
 
-The game allows **6 players**, but the reference has 4 of each. We need 2 more Indian tokens (ideas: camel, cricket bat, tiger, sailing dhow) and 2 more pawn colours (ideas: purple, orange).
+The token choice is cosmetic: it lives in the room (a `token` field on the room player, picked in the lobby), not in the rules engine.
 
-## Asset pipeline
+## Modelling approach (decided): built in three.js, no external 3D files
 
-1. Concept or reference image (GPT Image).
-2. Image-to-3D, to get a GLB.
-3. Clean up: centre it, scale it, set the pivot at the base, cap it at about 5–15k triangles. Blender, optionally via Blender MCP.
-4. A `gltf-transform` script handles meshopt or Draco geometry, KTX2 or WebP textures, and texture resizing.
-5. The result lands in `apps/web/public/models/`, registered in `scene/assets.ts` by game id.
+Tokens, landmarks, props and critters are built from code: rounded boxes, cylinders, lathe profiles (domes, pawns, minarets), extruded shapes (arches, jaalis), tubes (trunks, rails) and merged geometry. This fits the chunky, toy-like Nintendo style better than scanned detail, needs no asset pipeline, and keeps downloads tiny.
+
+- **Each model is a small React component** (`<AutoRickshaw />`, `<TajMahal />`) built from primitives. Geometry is memoised and merged so each model costs one or two draw calls.
+- **Shared materials:** pewter, glossy plastic, painted stone, water, glass. An HDR environment map is generated at runtime (drei `<Environment>` with lightformers), so there are no image files.
+- **Detail budget:** the engraved pewter look from the reference comes from normal maps and bevels, not geometry. The elephant is the hardest piece and will be a stylised, cute elephant, not a realistic one.
+- **Escape hatch:** any component can later be swapped for a GLB without touching the scene, if a piece needs more detail than primitives give.
 
 Budgets on mid-range phones:
-- Total first-load 3D assets under about 4 MB.
 - Under about 120 draw calls and 60 fps on the board.
 - Device pixel ratio capped at 1.5–2.
 - `frameloop="demand"` while idle, with only the water and critters ticking.
@@ -84,27 +86,23 @@ There are three quality tiers: high (shadows, bloom, critters), medium, and low 
 
 1. **Scene scaffold:** the Canvas behind the game UI, the camera, lights, quality tier, and reduced-motion support.
 2. **Board ring:** 40 tiles from engine data, with group colours, names and prices on canvas textures, and tap-to-select.
-3. **Classic pawns:** the procedural pawn, placement on tiles, and several tokens sharing a tile.
-4. **Token movement:** the event queue, then `moved` as a tile-by-tile hop with squash and stretch, plus camera follow.
+3. **Tokens:** classic pawns and the four Indian tokens modelled in code; placement on tiles, several tokens sharing a tile; the lobby token picker.
+4. **Token movement and camera:** the event queue, then `moved` as a tile-by-tile hop with squash and stretch; the cinematic follow camera and the return to top view.
 5. **Dice:** a 3D dice roll scripted to land on the server result.
 6. **Ownership and buildings:** owner flags on tiles, 3D houses and hotels, a mortgaged look.
-7. **Island v1:** placeholder landmarks from primitives, the lighting rig, and a toon water shader.
+7. **Island v1:** island terrain, placeholder landmark blocks, the lighting rig, and a toon water shader.
 8. **Water life:** jet skis, dolphins and the ferry on paths, instanced.
 9. **Event effects:** card flip, jail bars, club confetti, Rest House coins, auction gavel, buy stamp, rent coin burst.
-10. **Indian token theme:** the GLB loader and the theme setting, using the first real GLBs as they arrive.
-11. **Real landmark models** replace the placeholders one by one.
-12. **Performance pass:** draw-call audit, compression, and phone testing.
+10. **Landmarks:** the placeholder blocks are replaced one by one with proper code-built landmarks.
+11. **Performance pass:** draw-call audit and phone testing.
 
-## Open questions for the owner
+## Decisions (owner, 2026-10-12)
 
-1. **Board shape.** The tile order puts corners at 0, 9, 18 and 30, so the sides have 8, 8, 11 and 9 tiles: not a square. Options:
-   - (a) Move tiles so each side has 9 between corners (classic square). This changes some positions.
-   - (b) Keep the order and draw a rectangle or rounded track.
-   - Recommendation: (a). The engine only needs the order changed in one data file.
-2. **Two more tokens per theme** for 5–6 player games (see above).
-3. **Token theme scope.** Is it one theme for the whole room (the host picks), or does each player pick their own token from either set? Recommendation: each player picks any token, and the room shows a mix.
-4. **Who makes the GLB models.** Will you run image-to-3D yourself and drop the GLBs in, or connect a Meshy or Tripo API key so I can generate them?
-5. **Camera feel.** Fixed 3/4 view only, or free orbit with limits?
+1. **Board shape:** a square track, nine tiles per side, laid out like classic Indian business boards. Done in the engine (`packages/engine/src/config/base.ts`).
+2. **Players:** 4 max, so 4 tokens per theme.
+3. **Tokens:** each player picks any token from either theme.
+4. **Models:** built in three.js code, with no external 3D files.
+5. **Camera:** a fixed top view when nothing is moving; a cinematic zoom while a token moves.
 
 ## Not in scope yet
 
