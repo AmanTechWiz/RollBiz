@@ -38,6 +38,7 @@ const RAKE = Math.atan2(SCREEN_BASE[0] - SCREEN_TOP[0], SCREEN_TOP[1] - SCREEN_B
 
 // Doorway, open on both sides: the cabin interior is the space it cuts through the shell.
 const DOOR = { x0: -0.12, x1: 0.28, y0: 0.17, y1: 0.77 };
+const DASH_Y = 0.5; // top of the dashboard, below the windscreen
 
 function roundedRectPath(path: Path, x0: number, y0: number, x1: number, y1: number, r: number) {
   path.moveTo(x0 + r, y0);
@@ -63,16 +64,24 @@ function cabinProfile(): Shape {
   s.bezierCurveTo(-0.48, 0.79, -0.42, 0.86, -0.3, 0.87);
   s.quadraticCurveTo(0.0, 0.9, 0.24, 0.88);
   s.bezierCurveTo(0.31, 0.875, SCREEN_TOP[0], 0.86, SCREEN_TOP[0], SCREEN_TOP[1]);
-  s.lineTo(SCREEN_BASE[0], SCREEN_BASE[1]); // raked windscreen line
+  // roof's front edge, then the cabin opening: under the roof back to the rear bulkhead,
+  // down to the floor, forward to the dashboard, up and over the dash to the windscreen base
+  s.lineTo(SCREEN_TOP[0] - 0.012, DOOR.y1);
+  s.lineTo(DOOR.x0 + 0.07, DOOR.y1);
+  s.quadraticCurveTo(DOOR.x0, DOOR.y1, DOOR.x0, DOOR.y1 - 0.07);
+  s.lineTo(DOOR.x0, DOOR.y0 + 0.07);
+  s.quadraticCurveTo(DOOR.x0, DOOR.y0, DOOR.x0 + 0.07, DOOR.y0);
+  s.lineTo(DOOR.x1 - 0.05, DOOR.y0);
+  s.quadraticCurveTo(DOOR.x1, DOOR.y0, DOOR.x1, DOOR.y0 + 0.05);
+  s.lineTo(DOOR.x1, DASH_Y - 0.04);
+  s.quadraticCurveTo(DOOR.x1, DASH_Y, DOOR.x1 + 0.04, DASH_Y);
+  s.lineTo(SCREEN_BASE[0] - 0.012, DASH_Y);
+  s.lineTo(SCREEN_BASE[0], SCREEN_BASE[1]);
   s.quadraticCurveTo(FACE_X, SCREEN_BASE[1] - 0.01, FACE_X, SCREEN_BASE[1] - 0.04);
   s.lineTo(FACE_X, 0.31); // lower front face, then step up to clear the front wheel
   s.quadraticCurveTo(FACE_X, 0.26, 0.4, 0.26);
   s.quadraticCurveTo(0.37, 0.26, 0.37, 0.2);
   s.quadraticCurveTo(0.37, BOTTOM, 0.34, BOTTOM);
-
-  const door = new Path();
-  roundedRectPath(door, DOOR.x0, DOOR.y0, DOOR.x1, DOOR.y1, 0.07);
-  s.holes.push(door);
   return s;
 }
 
@@ -194,10 +203,18 @@ export function buildRickshaw(): RickshawGeometry {
   body.push(roof.shell, ...roof.seams);
 
   for (const side of [1, -1] as const) {
-    // Raised bead around the doorway opening.
-    const door = new Path();
-    roundedRectPath(door, DOOR.x0 - 0.045, DOOR.y0 - 0.045, DOOR.x1 + 0.045, DOOR.y1 + 0.045, 0.1);
-    body.push(bead(door, 0.011, onSide(side)));
+    // Raised bead along the opening's roof edge, rear pillar and sill.
+    const zb = side * (HALF + 0.004);
+    body.push(
+      rail(
+        [
+          [SCREEN_TOP[0] - 0.03, DOOR.y1 + 0.045, zb], [DOOR.x0 + 0.03, DOOR.y1 + 0.045, zb], [DOOR.x0 - 0.04, DOOR.y1 - 0.01, zb],
+          [DOOR.x0 - 0.045, DOOR.y0 + 0.02, zb], [DOOR.x0 + 0.03, DOOR.y0 - 0.045, zb], [DOOR.x1 + 0.0, DOOR.y0 - 0.045, zb],
+          [DOOR.x1 + 0.045, DOOR.y0 + 0.03, zb], [DOOR.x1 + 0.045, DASH_Y - 0.02, zb],
+        ],
+        0.011,
+      ),
+    );
 
     // Rear quarter window: pane with a raised frame.
     const quarter = new Path();
@@ -226,13 +243,10 @@ export function buildRickshaw(): RickshawGeometry {
   const screenLen = Math.hypot(SCREEN_BASE[0] - SCREEN_TOP[0], SCREEN_TOP[1] - SCREEN_BASE[1]);
   const screen = new Path();
   roundedRectPath(screen, -0.215, 0.03, 0.215, screenLen - 0.02, 0.04);
-  glass.push(pane(screen, onScreen(0.03)));
+  glass.push(pane(screen, onScreen(0.018)));
   const surround = new Path();
   roundedRectPath(surround, -0.245, 0.0, 0.245, screenLen + 0.02, 0.05);
-  body.push(bead(surround, 0.022, onScreen(0.028)));
-  const backing = new Path();
-  roundedRectPath(backing, -0.24, 0.005, 0.24, screenLen + 0.015, 0.05);
-  body.push(pane(backing, onScreen(0.012)));
+  body.push(bead(surround, 0.022, onScreen(0.018)));
 
   // --- Front face: a nose column projecting forward, a lamp on it, lamps on both corners
   const nose = new Shape();
@@ -287,7 +301,7 @@ export function buildRickshaw(): RickshawGeometry {
   const rx = driverX - 0.075;
   body.push(rail([[rx, 0.17, HALF - 0.04], [rx, 0.44, HALF - 0.04], [rx, 0.46, 0.12], [rx, 0.46, -0.12], [rx, 0.44, -(HALF - 0.04)], [rx, 0.17, -(HALF - 0.04)]], 0.009));
 
-  body.push(place(new RoundedBoxGeometry(0.06, 0.08, W - 0.06, 3, 0.02), [DOOR.x1 - 0.02, 0.44, 0]));
+  body.push(place(new RoundedBoxGeometry(0.06, 0.08, W - 0.06, 3, 0.02), [DOOR.x1 - 0.01, DASH_Y - 0.03, 0]));
   body.push(place(new CylinderGeometry(0.012, 0.012, 0.18, 10), [DOOR.x1 - 0.06, 0.42, 0], [0, 0, 0.5]));
   body.push(rail([[DOOR.x1 - 0.09, 0.5, -0.15], [DOOR.x1 - 0.1, 0.5, 0], [DOOR.x1 - 0.09, 0.5, 0.15]], 0.01));
   for (const s of [1, -1]) dark.push(place(new CylinderGeometry(0.015, 0.015, 0.05, 12), [DOOR.x1 - 0.09, 0.5, s * 0.16], [Math.PI / 2, 0, 0]));
