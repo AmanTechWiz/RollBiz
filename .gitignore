@@ -10,3 +10,4 @@ supabase/.branches
 supabase/.temp
 .claude/
 .superpowers/
+.img2threejs/
