@@ -1,11 +1,11 @@
 // Screenshots one model from the running gallery so it can be compared with the reference art.
-// Usage: bun run shot <model-id> [front|side|back|top] [out.png]
+// Usage: bun run shot <model-id> [front|side|nose|back|top|ref] [out.png]
 // Needs the gallery dev server running (bun run dev, port 5174).
 import { chromium } from "playwright";
 
 const [id, angle = "front", out = `shots/${id}-${angle}.png`] = process.argv.slice(2);
 if (!id) {
-  console.error("usage: bun run shot <model-id> [front|side|back|top] [out.png]");
+  console.error("usage: bun run shot <model-id> [front|side|nose|back|top|ref] [out.png]");
   process.exit(2);
 }
 

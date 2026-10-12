@@ -15,7 +15,12 @@ export function Inspector({ model, onClose, shotMode = false }: Props) {
   const angle = new URLSearchParams(location.search).get("angle") ?? "front";
   const d = model.viewDistance;
   const camera: [number, number, number] =
-    angle === "side" ? [d, d * 0.35, 0] : angle === "top" ? [0, d, 0.001] : angle === "back" ? [-d * 0.6, d * 0.45, -d * 0.7] : [d * 0.6, d * 0.45, d * 0.75];
+    angle === "side" ? [0, d * 0.25, d] // true profile; vehicles face +X
+    : angle === "nose" ? [d, d * 0.3, 0]
+    : angle === "top" ? [0, d, 0.001]
+    : angle === "back" ? [-d * 0.6, d * 0.45, -d * 0.7]
+    : angle === "ref" ? [d * 0.35, d * 0.2, d * 0.95] // matches the reference photo's camera
+    : [d * 0.6, d * 0.45, d * 0.75];
 
   return (
     <div className={`inspector ${dark ? "dark" : ""} ${shotMode ? "shot" : ""}`}>
