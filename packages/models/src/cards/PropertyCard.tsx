@@ -11,10 +11,10 @@ const PX_W = Math.round((PX_H * W_UNITS) / H_UNITS); // 706
 
 /** Bright, clean group colours. `ink` is the text colour used on top of the header. */
 export const GROUP_COLORS: Record<GroupId, { fill: string; deep: string; ink: string }> = {
-  brown: { fill: "#b97a52", deep: "#9a5f3b", ink: "#ffffff" },
-  lightBlue: { fill: "#63cdf5", deep: "#34b2e4", ink: "#0b3a55" },
+  brown: { fill: "#ff922b", deep: "#ec7409", ink: "#ffffff" },
+  lightBlue: { fill: "#a36bf0", deep: "#8248d9", ink: "#ffffff" },
   pink: { fill: "#f573ae", deep: "#e44f93", ink: "#ffffff" },
-  orange: { fill: "#ffa02e", deep: "#f27d0c", ink: "#ffffff" },
+  orange: { fill: "#4cc3f7", deep: "#22a6e3", ink: "#0b3a55" },
   red: { fill: "#f25151", deep: "#d93636", ink: "#ffffff" },
   yellow: { fill: "#ffd83d", deep: "#f5be0f", ink: "#4a3600" },
   green: { fill: "#3fc772", deep: "#23a857", ink: "#ffffff" },

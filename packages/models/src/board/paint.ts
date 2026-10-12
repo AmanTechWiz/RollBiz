@@ -4,10 +4,10 @@ import { INNER_SIZE, PRINT_SIZE, TILE_D, TILE_W, tileRect } from "./layout";
 
 /** Bright, clean group colours. */
 export const GROUP_COLORS: Record<GroupId, string> = {
-  brown: "#a8683c",
-  lightBlue: "#5ccbf2",
+  brown: "#ff8a1f",
+  lightBlue: "#9b5de5",
   pink: "#ff7eb9",
-  orange: "#ff9a2e",
+  orange: "#38bdf8",
   red: "#ef4444",
   yellow: "#ffd02b",
   green: "#2fbf71",
