@@ -4,7 +4,7 @@ Status: decisions settled (see below). Nothing here is built yet beyond installi
 
 ## What we're making
 
-A playful, Nintendo-style 3D game table on a phone:
+A premium 3D game table on a phone, wrapped in a modern Nintendo-system-style UI:
 - **The board** is a flat ring of 40 tiles, drawn from engine data (names, prices, group colours, owners, houses).
 - **The centre** is a stylised island city: a mash-up of famous Indian landmarks with warm lighting and gentle motion.
 - **Water** surrounds the island, with tiny life: jet skis carving wakes, dolphins arcing, a ferry.
@@ -38,15 +38,17 @@ apps/web/src/scene/
   assets.ts            # manifest: game ids -> files
 ```
 
-## Look and feel ("Nintendo vibe")
+## Look and feel (clarified by owner, 2026-10-12)
 
-- **Shapes:** chunky and rounded, with bevels everywhere and toy-like proportions. Saturated but soft colours.
-- **Lighting:** a warm key light from the top left, a soft sky fill, and one shadow-casting light with baked contact shadows under props. Light bloom on highlights only.
-- **Materials:**
-  - Pewter tokens: metalness about 0.9, roughness about 0.35, with an HDR environment map for reflections.
-  - Classic pawns: glossy plastic (roughness about 0.2) with a clearcoat.
-- **Motion:** squash and stretch on hops, overshoot springs, short durations (150–400 ms) that never block play for long. `prefers-reduced-motion` turns most of it off.
-- **Sound:** later, but plan for hooks on the same events.
+- **App UI = modern Nintendo system UI**, not Nintendo game art. Think of the Switch home and settings screens:
+  - A clean light (or dark) canvas, white rounded tiles, and a cyan selection ring that pops with a springy scale.
+  - Bold rounded sans type, generous spacing, short snappy transitions, and satisfying click and select feedback.
+  - The gallery site (`apps/gallery`) already uses this style and is the reference for the game UI.
+- **Game pieces are realistic and premium**, accurate to the reference art:
+  - Brushed-pewter Indian tokens and glossy plastic pawns.
+  - The board and cards look like a high-end printed set.
+- **Lighting:** studio-style, with a soft key from the top left (as in the reference photo), a runtime environment map for metal reflections, and contact shadows.
+- **Motion:** springy and short (150–400 ms). `prefers-reduced-motion` disables most of it.
 
 ## The island city (board centre)
 
@@ -83,6 +85,8 @@ Budgets on mid-range phones:
 There are three quality tiers: high (shadows, bloom, critters), medium, and low (no post-processing, fewer critters). They are picked automatically and can be overridden in settings.
 
 ## Build order (each part small and shippable)
+
+0. **Model gallery (in progress):** tokens, board and cards are built in `packages/models` and inspected at http://localhost:5174 (`apps/gallery`) before going into the game.
 
 1. **Scene scaffold:** the Canvas behind the game UI, the camera, lights, quality tier, and reduced-motion support.
 2. **Board ring:** 40 tiles from engine data, with group colours, names and prices on canvas textures, and tap-to-select.
