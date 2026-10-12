@@ -222,16 +222,11 @@ export function buildRickshaw(): RickshawGeometry {
     body.push(rail([[DOOR.x1 + 0.06, 0.47, z], [0.42, 0.47, z], [0.48, 0.47, z * 0.88]], 0.011));
   }
 
-  // --- Raked windscreen: two panes split by a centre pillar, each with a raised frame.
+  // --- Raked windscreen: one clear pane (no dividers) inside a raised surround that meets the roof.
   const screenLen = Math.hypot(SCREEN_BASE[0] - SCREEN_TOP[0], SCREEN_TOP[1] - SCREEN_BASE[1]);
-  for (const side of [1, -1]) {
-    const p = new Path();
-    const [u0, u1] = side > 0 ? [0.022, 0.215] : [-0.215, -0.022];
-    roundedRectPath(p, u0, 0.03, u1, screenLen - 0.02, 0.03);
-    glass.push(pane(p, onScreen(0.03)));
-    body.push(bead(p, 0.01, onScreen(0.036)));
-  }
-  // Outer windscreen surround: a thick frame standing proud of the front, meeting the roof at its top.
+  const screen = new Path();
+  roundedRectPath(screen, -0.215, 0.03, 0.215, screenLen - 0.02, 0.04);
+  glass.push(pane(screen, onScreen(0.03)));
   const surround = new Path();
   roundedRectPath(surround, -0.245, 0.0, 0.245, screenLen + 0.02, 0.05);
   body.push(bead(surround, 0.022, onScreen(0.028)));
