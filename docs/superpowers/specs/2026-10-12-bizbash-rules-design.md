@@ -4,7 +4,7 @@ Source: the product owner's brief (2026-10-12), kept close to verbatim. The "Imp
 
 ## 1. Core Design Requirements
 
-- Multiplayer games with 2–6 players.
+- Multiplayer games with 2–4 players (owner decision 2026-10-12: 4 tokens per theme, 4 players max).
 - Currency: Indian Rupees (₹).
 - Default starting balance: **₹20,000 per player**.
 - The room creator configures starting money, property prices, bank inventory and other economy settings before the game begins.
@@ -58,50 +58,52 @@ Single source of truth, kept separate:
 
 ## 4. Default Board: 40 Tiles (clockwise from index 0)
 
+Square track (owner decision 2026-10-12: "choose the best order, as Indian board games do"). Corners at 0, 10, 20, 30; each side has nine tiles: two colour groups, one transport in the middle, and two other spaces. Prices rise clockwise.
+
 | # | Tile | Category |
 |---|---|---|
 | 0 | Start | Corner |
 | 1 | Patna | Brown |
-| 2 | Ranchi | Brown |
-| 3 | Community Chest | Event |
+| 2 | Community Chest | Event |
+| 3 | Ranchi | Brown |
 | 4 | Raipur | Brown |
-| 5 | Income Tax | Tax |
+| 5 | Indian Railways | Transport |
 | 6 | Lucknow | Light Blue |
-| 7 | Bhopal | Light Blue |
-| 8 | Indore | Light Blue |
-| 9 | Jail / Just Visiting | Corner |
-| 10 | Jaipur | Pink |
-| 11 | Udaipur | Pink |
-| 12 | Chance | Event |
-| 13 | Jodhpur | Pink |
-| 14 | Ahmedabad | Orange |
-| 15 | Surat | Orange |
-| 16 | Vadodara | Orange |
-| 17 | Indian Railways | Transport |
-| 18 | Rest House | Corner |
-| 19 | Hyderabad | Red |
-| 20 | Chennai | Red |
-| 21 | Kolkata | Red |
-| 22 | Community Chest | Event |
-| 23 | Pune | Yellow |
-| 24 | Bengaluru | Yellow |
-| 25 | Ahmedabad GIFT City | Yellow |
-| 26 | Wealth Tax | Tax |
-| 27 | Gurugram | Green |
-| 28 | Noida | Green |
-| 29 | Mumbai | Green |
+| 7 | Income Tax | Tax |
+| 8 | Bhopal | Light Blue |
+| 9 | Indore | Light Blue |
+| 10 | Jail / Just Visiting | Corner |
+| 11 | Jaipur | Pink |
+| 12 | Power Grid | Utility |
+| 13 | Udaipur | Pink |
+| 14 | Jodhpur | Pink |
+| 15 | National Highways | Transport |
+| 16 | Ahmedabad | Orange |
+| 17 | Chance | Event |
+| 18 | Surat | Orange |
+| 19 | Vadodara | Orange |
+| 20 | Rest House | Corner |
+| 21 | Hyderabad | Red |
+| 22 | Chance | Event |
+| 23 | Chennai | Red |
+| 24 | Kolkata | Red |
+| 25 | Indian Airways | Transport |
+| 26 | Pune | Yellow |
+| 27 | Bengaluru | Yellow |
+| 28 | Digital Bharat Network | Utility |
+| 29 | Ahmedabad GIFT City | Yellow |
 | 30 | Club | Corner |
-| 31 | New Delhi | Dark Blue |
-| 32 | Bengaluru Tech Park | Dark Blue |
-| 33 | Mumbai BKC | Dark Blue |
-| 34 | Chance | Event |
-| 35 | National Highways | Transport |
-| 36 | Power Grid | Utility |
-| 37 | Indian Airways | Transport |
-| 38 | Coastal Shipping | Transport |
-| 39 | Digital Bharat Network | Utility |
+| 31 | Gurugram | Green |
+| 32 | Noida | Green |
+| 33 | Community Chest | Event |
+| 34 | Mumbai | Green |
+| 35 | Coastal Shipping | Transport |
+| 36 | New Delhi | Dark Blue |
+| 37 | Wealth Tax | Tax |
+| 38 | Bengaluru Tech Park | Dark Blue |
+| 39 | Mumbai BKC | Dark Blue |
 
-24 city properties, 4 transport, 2 utilities, 2 Chance, 2 Community Chest, 2 taxes, 4 corners. Verify counts programmatically.
+24 city properties, 4 transport, 2 utilities, 2 Chance, 2 Community Chest, 2 taxes, 4 corners. Verify counts and corner positions programmatically.
 
 ## 5. Base Property Data (₹)
 
@@ -281,7 +283,7 @@ Every card effect is a validated game action with structured effects (no parsing
 ## Implementation decisions (ours, not from the brief)
 
 1. **Product name.** The brief says "Bizbash"; the repo and app are "RollBiz". Code keeps RollBiz until the owner decides.
-2. **Board order.** Kept exactly as listed. Corners land at 0, 9, 18, 30, so the four sides hold 8, 8, 11 and 9 tiles: not a square 11×11 track. The engine doesn't care; the board renderer needs a decision later.
+2. **Board order.** Superseded by the owner's 2026-10-12 decision: the square layout in §4. The brief's original order had corners at 0, 9, 18, 30.
 3. **Rounding at 1.0×.** Rounding to ₹100 would change base values such as ₹240 rent. At exactly 1.0× base values are used unchanged; at any other multiplier every scaled amount is rounded to the nearest ₹100, minimum ₹100.
 4. **What scales.** All fixed monetary rules and card amounts scale (Start bonus, taxes, jail fine, Rest House/Club, per-house/per-hotel card rates and caps, transport rents, minimum bid). Not scaled: starting money, bank cash, utility dice multipliers, percentages.
 5. **Unmortgage cost** = ceil(mortgage × 1.10) to the nearest rupee.
