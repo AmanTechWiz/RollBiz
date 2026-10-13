@@ -14,7 +14,7 @@ export function Sheet({ title, onClose, children }: { title: string; onClose: ()
       <div
         role="dialog"
         aria-label={title}
-        className="mx-auto flex max-h-[88dvh] w-full max-w-md flex-col rounded-t-3xl border-4 border-b-0 border-brand-ink bg-cream"
+        className="mx-auto flex max-h-[88dvh] w-full max-w-md flex-col rounded-t-3xl border border-b-0 border-line shadow-[0_-10px_30px_-10px_rgb(30_80_130_/_0.3)] bg-cream"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between gap-3 p-4 pb-2">

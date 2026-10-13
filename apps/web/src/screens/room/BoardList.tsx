@@ -32,7 +32,7 @@ export function BoardList({ ctx }: { ctx: GameCtx }) {
           return (
             <li
               key={tile.id}
-              className={`flex overflow-hidden rounded-xl border-2 border-brand-ink ${here ? "bg-sun/40" : "bg-white"}`}
+              className={`flex overflow-hidden rounded-xl border-2 border-line ${here ? "bg-sun/40" : "bg-white"}`}
             >
               <span className={`w-3 shrink-0 ${color}`} />
               <div className="min-w-0 flex-1 px-2 py-1">

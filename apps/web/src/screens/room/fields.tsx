@@ -31,7 +31,7 @@ export function Chips<T extends string | number>({
           disabled={disabled}
           aria-pressed={o.value === value}
           onClick={() => onPick(o.value)}
-          className={`min-h-11 rounded-xl border-2 border-brand-ink px-3 text-sm font-semibold disabled:opacity-60 ${
+          className={`min-h-11 rounded-xl border-2 border-line px-3 text-sm font-semibold disabled:opacity-60 ${
             o.value === value ? "bg-brand text-white" : "bg-white"
           }`}
         >
@@ -102,7 +102,7 @@ export function NumberField({
         }}
         onChange={(e) => onChange(e.target.value.replace(/[^\d]/g, ""))}
         className={`min-h-11 w-32 rounded-xl border-2 bg-white px-3 text-right tabular-nums disabled:opacity-60 ${
-          valid ? "border-brand-ink" : "border-berry"
+          valid ? "border-line" : "border-berry"
         }`}
       />
     </label>
@@ -131,7 +131,7 @@ export function Toggle({
     >
       <span className="font-medium">{label}</span>
       <span
-        className={`flex h-7 w-12 shrink-0 items-center rounded-full border-2 border-brand-ink px-0.5 ${
+        className={`flex h-7 w-12 shrink-0 items-center rounded-full border-2 border-line px-0.5 ${
           checked ? "justify-end bg-go" : "justify-start bg-white"
         }`}
       >

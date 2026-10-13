@@ -40,7 +40,7 @@ export function AuctionPanel({ ctx }: { ctx: GameCtx }) {
               inputMode="numeric"
               value={amount}
               onChange={(e) => setAmount(e.target.value.replace(/[^\d]/g, ""))}
-              className="min-h-11 w-full min-w-0 rounded-xl border-2 border-brand-ink bg-white px-3 text-right tabular-nums"
+              className="min-h-11 w-full min-w-0 rounded-xl border-2 border-line bg-white px-3 text-right tabular-nums"
             />
           </label>
           <p className="text-sm opacity-70">Minimum {money(minBid)}.</p>

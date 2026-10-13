@@ -60,9 +60,9 @@ function PreviewBody({ economy }: { economy: ResolvedEconomy }) {
         {groups.map((g) => {
           const props = cities(g.id);
           return (
-            <li key={g.id} className="overflow-hidden rounded-xl border-2 border-brand-ink bg-cream">
+            <li key={g.id} className="overflow-hidden rounded-xl border-2 border-line bg-cream">
               <div className="flex items-center gap-2 px-2 py-1">
-                <span className={`size-4 shrink-0 rounded-full border-2 border-brand-ink ${GROUP_BG[g.id]}`} />
+                <span className={`size-4 shrink-0 rounded-full border-2 border-line ${GROUP_BG[g.id]}`} />
                 <span className="font-semibold">{g.name}</span>
                 <span className="ml-auto tabular-nums">Build {money(g.houseCost)}</span>
               </div>
@@ -75,7 +75,7 @@ function PreviewBody({ economy }: { economy: ResolvedEconomy }) {
           );
         })}
         {transports.length > 0 && (
-          <li className="rounded-xl border-2 border-brand-ink bg-cream px-2 py-1">
+          <li className="rounded-xl border-2 border-line bg-cream px-2 py-1">
             <p className="font-semibold">Transports ({transports.length})</p>
             <p className="text-xs leading-5 tabular-nums">
               Price {range(transports.map((p) => p.price))}
@@ -86,7 +86,7 @@ function PreviewBody({ economy }: { economy: ResolvedEconomy }) {
           </li>
         )}
         {utilities.length > 0 && (
-          <li className="rounded-xl border-2 border-brand-ink bg-cream px-2 py-1">
+          <li className="rounded-xl border-2 border-line bg-cream px-2 py-1">
             <p className="font-semibold">Utilities ({utilities.length})</p>
             <p className="text-xs leading-5 tabular-nums">
               Price {range(utilities.map((p) => p.price))}

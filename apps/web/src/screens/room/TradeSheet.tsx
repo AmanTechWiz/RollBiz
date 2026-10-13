@@ -129,7 +129,7 @@ function Side(props: {
   cardTitle: (id: CardId) => string;
 }) {
   return (
-    <div className="space-y-2 rounded-2xl border-2 border-brand-ink bg-white p-3">
+    <div className="space-y-2 rounded-2xl border-2 border-line bg-white p-3">
       <p className="font-semibold">{props.title}</p>
       <label className="flex items-center justify-between gap-3">
         <span className="text-sm">Cash (up to {money(props.maxCash)})</span>
@@ -138,7 +138,7 @@ function Side(props: {
           placeholder="0"
           value={props.cash}
           onChange={(e) => props.setCash(e.target.value.replace(/[^\d]/g, ""))}
-          className="min-h-11 w-28 rounded-xl border-2 border-brand-ink px-3 text-right tabular-nums"
+          className="min-h-11 w-28 rounded-xl border-2 border-line px-3 text-right tabular-nums"
         />
       </label>
       {props.props.length === 0 && props.cards.length === 0 && (

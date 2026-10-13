@@ -29,7 +29,7 @@ export function ManageSheet({ ctx, onClose }: { ctx: GameCtx; onClose: () => voi
         ))}
       </ul>
       {sellGroups.length > 0 && (
-        <div className="space-y-2 rounded-2xl border-2 border-brand-ink bg-white p-3">
+        <div className="space-y-2 rounded-2xl border-2 border-line bg-white p-3">
           <p className="font-semibold">Sell all buildings in a colour group</p>
           <p className="text-xs opacity-70">Always works, even if the bank is short on houses.</p>
           <div className="flex flex-wrap gap-2">
@@ -79,7 +79,7 @@ function PropertyRow({ ctx, prop }: { ctx: GameCtx; prop: ResolvedProperty }) {
   const canUnmortgage = state.mortgaged && cash >= prop.unmortgageCost;
 
   return (
-    <li className="overflow-hidden rounded-2xl border-2 border-brand-ink bg-white">
+    <li className="overflow-hidden rounded-2xl border-2 border-line bg-white">
       <div className="flex">
         <span className={`w-3 shrink-0 ${color}`} />
         <div className="min-w-0 flex-1 space-y-2 p-2">
