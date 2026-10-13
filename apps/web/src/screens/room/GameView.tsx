@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
-import { sendAction, type ActionInput, type GameRoom, type RoomView } from "../../lib/colyseus";
+import type { ActionInput, RoomView } from "../../lib/colyseus";
 import type { LogEntry } from "../../hooks/useRoomState";
 import { GameButton } from "../../ui";
 import { ActivityLog } from "./ActivityLog";
 import { AuctionPanel } from "./AuctionPanel";
+import { Board3D } from "./Board3D";
 import { BoardList } from "./BoardList";
 import { DebtPanel } from "./DebtPanel";
 import { GameOver } from "./GameOver";
@@ -16,10 +17,19 @@ import { TradeSheet } from "./TradeSheet";
 import { TurnPanel } from "./TurnPanel";
 import type { GameCtx } from "./types";
 
-type Props = { room: GameRoom; view: RoomView; meId: string; log: LogEntry[]; onLeave: () => void };
+type Props = {
+  view: RoomView;
+  meId: string;
+  log: LogEntry[];
+  onLeave: () => void;
+  /** Sends one action chosen against `version` (online: to the room; pass & play: to the local engine). */
+  act: (action: ActionInput, version: number) => void;
+  /** Pass & play hides trading (one shared screen). */
+  local?: boolean;
+};
 
 /** In-game screen. Renders nothing until both the economy and the game view have been read. */
-export function GameView({ room, view, meId, log, onLeave }: Props) {
+export function GameView({ view, meId, log, onLeave, act, local = false }: Props) {
   const { game, economy } = view;
   const [sheet, setSheet] = useState<"manage" | "trade" | null>(null);
 
@@ -31,9 +41,9 @@ export function GameView({ room, view, meId, log, onLeave }: Props) {
       meId,
       me: game.players.find((p) => p.id === meId),
       names: makeNames(game, economy),
-      act: (action: ActionInput) => sendAction(room, action, game.version),
+      act: (action: ActionInput) => act(action, game.version),
     };
-  }, [game, economy, meId, room]);
+  }, [game, economy, meId, act]);
 
   const legal = ctx ? computeLegal(ctx) : null;
   if (!ctx || !legal) return <p className="m-auto text-lg font-semibold">Loading game...</p>;
@@ -46,6 +56,7 @@ export function GameView({ room, view, meId, log, onLeave }: Props) {
       {g.status === "playing" && !legal.alive && ctx.me?.bankrupt && (
         <p className="rounded-2xl bg-berry/15 p-3 text-center font-semibold">You are out of the game. You can keep watching.</p>
       )}
+      <Board3D ctx={ctx} />
       {g.status === "playing" && <TurnPanel ctx={ctx} />}
       <DebtPanel ctx={ctx} onManage={() => setSheet("manage")} />
       {auction && <AuctionPanel ctx={ctx} />}
@@ -56,14 +67,19 @@ export function GameView({ room, view, meId, log, onLeave }: Props) {
           <GameButton variant="ghost" onClick={() => setSheet("manage")}>
             Manage
           </GameButton>
-          <GameButton variant="ghost" disabled={!legal.canTrade} onClick={() => setSheet("trade")}>
+          <GameButton variant="ghost" disabled={local || !legal.canTrade} onClick={() => setSheet("trade")}>
             Trade
           </GameButton>
         </div>
       )}
 
       <PlayersPanel ctx={ctx} lobbyPlayers={view.players} />
-      <BoardList ctx={ctx} />
+      <details className="glass-card rounded-[1.75rem] p-4">
+        <summary className="cursor-pointer text-lg font-bold">All properties</summary>
+        <div className="mt-3">
+          <BoardList ctx={ctx} />
+        </div>
+      </details>
       <ActivityLog ctx={ctx} log={log} />
       {g.status === "playing" && g.endsAt !== null && <TimeLeft endsAt={g.endsAt} />}
 
