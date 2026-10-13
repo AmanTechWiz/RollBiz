@@ -10,6 +10,7 @@ import {
 } from "three";
 import "../r3f-jsx";
 import { BOARD_THICKNESS, PRINT_SIZE } from "./layout";
+import { BoardCenter } from "./BoardCenter";
 import { paintBoard } from "./paint";
 
 export { BOARD_SIZE, tileCenter } from "./layout";
@@ -113,6 +114,7 @@ export function Board() {
     <group>
       <mesh geometry={slab} material={edgeMat} castShadow receiveShadow />
       <mesh geometry={face} material={faceMat} position={[0, BOARD_THICKNESS + 0.0005, 0]} receiveShadow />
+      <BoardCenter />
     </group>
   );
 }

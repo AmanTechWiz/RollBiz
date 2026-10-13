@@ -8,5 +8,6 @@ export { Scooter } from "./tokens/Scooter";
 export { Elephant } from "./tokens/Elephant";
 export { SteamTrain } from "./tokens/SteamTrain";
 export { Board } from "./board/Board";
+export { tileCenter, tileRect, BOARD_SIZE, BOARD_THICKNESS } from "./board/layout";
 export { EventCard } from "./cards/EventCard";
 export { PropertyCard } from "./cards/PropertyCard";
