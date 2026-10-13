@@ -16,7 +16,7 @@ export const CARD_THICKNESS = 0.015;
 const CORNER = 0.065;
 const BEVEL = 0.0018;
 const FACE_INSET = 0.004;
-const FACE_LIFT = 0.0004;
+const FACE_LIFT = 0.0015;
 
 export const FONT_STACK =
   '"SF Pro Rounded", ui-rounded, "Nunito", "Arial Rounded MT Bold", "Varela Round", "Helvetica Neue", system-ui, sans-serif';
@@ -191,6 +191,11 @@ function faceMaterial(tex: Texture): MeshStandardMaterial {
       toneMapped: false,
       roughness: 0.55,
       metalness: 0,
+      // Always draw the print over the card body: without this the face z-fights with the
+      // body at grazing angles and from far away (depth precision), and flickers.
+      polygonOffset: true,
+      polygonOffsetFactor: -4,
+      polygonOffsetUnits: -4,
     });
     faceMaterials.set(tex, m);
   }
