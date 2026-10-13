@@ -1,3 +1,4 @@
+import type { Session } from "@supabase/supabase-js";
 import { useEffect, useRef, useState } from "react";
 import { useSession } from "./hooks/useSession";
 import { forgetRoom, rememberRoom, resumeRoom, type GameRoom } from "./lib/colyseus";
@@ -47,8 +48,13 @@ export function App() {
     if (!session && room) room.leave();
   }, [session, room]);
 
+  // Dev-only: open /?preview to see the signed-in home screen without Google sign-in.
+  const preview = import.meta.env.DEV && new URLSearchParams(location.search).has("preview");
+  const fake = { user: { id: "preview", email: "you@example.com", user_metadata: { full_name: "Aman Kumar" } } } as unknown as Session;
+
   let screen;
-  if (loading || resuming) screen = <p className="m-auto text-xl font-semibold">Loading...</p>;
+  if (preview) screen = <Lobby session={fake} onJoined={() => {}} />;
+  else if (loading || resuming) screen = <p className="m-auto text-xl font-semibold">Loading...</p>;
   else if (!session) screen = <SignIn />;
   else if (room) screen = <RoomScreen room={room} session={session} />;
   else screen = <Lobby session={session} onJoined={setRoom} />;
