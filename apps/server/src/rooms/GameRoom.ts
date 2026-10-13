@@ -23,7 +23,7 @@ import {
   type SystemAction,
 } from "@rollbiz/engine";
 import { isJwksUnavailable, verifySupabaseToken } from "../auth/supabase";
-import { RECONNECT_SECONDS, cryptoRng, mergeSettings, shuffle } from "../game/room-logic";
+import { RECONNECT_SECONDS, cryptoRng, mergeSettings, releaseRoomCode, shuffle, takeRoomCode } from "../game/room-logic";
 import { canTakeSeat, releaseSeat, takeSeat } from "../game/seats";
 import { GameState, Player } from "./schema/GameState";
 
@@ -78,6 +78,8 @@ export class GameRoom extends Room<{ state: GameState; client: GameClient }> {
   }
 
   onCreate(options: unknown) {
+    // Short code friends can type; Colyseus allows replacing roomId only here.
+    this.roomId = takeRoomCode();
     // Public rooms are matched by Quick Play (`joinOrCreate`) until the game starts
     // and the room is locked. Private rooms are joined by sharing `room.roomId`.
     if (JoinOptionsSchema.safeParse(options).data?.isPrivate) {
@@ -146,6 +148,7 @@ export class GameRoom extends Room<{ state: GameState; client: GameClient }> {
   }
 
   onDispose() {
+    releaseRoomCode(this.roomId);
     this.timeUpTimer?.clear();
     for (const userId of this.seated) this.releaseUser(userId);
   }

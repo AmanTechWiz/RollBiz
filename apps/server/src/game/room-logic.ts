@@ -30,3 +30,24 @@ export function mergeSettings(current: RoomSettings, patch: Record<string, unkno
     .join("; ");
   return { ok: false, error };
 }
+
+// Room codes: 4 digits then 2 letters, e.g. "4821KQ". I and O are left out so they can't be misread as 1 and 0.
+const CODE_LETTERS = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+export const ROOM_CODE_PATTERN = /^\d{4}[A-HJ-NP-Z]{2}$/;
+const liveCodes = new Set<string>(); // shortcut: process-local, fine while one game server runs; move to presence/Redis when scaling out
+
+/** A room code not used by any open room. Call `releaseRoomCode` when the room closes. */
+export function takeRoomCode(int: (n: number) => number = (n) => randomInt(n)): string {
+  for (;;) {
+    const digits = String(int(10_000)).padStart(4, "0");
+    const code = digits + CODE_LETTERS[int(CODE_LETTERS.length)]! + CODE_LETTERS[int(CODE_LETTERS.length)]!;
+    if (!liveCodes.has(code)) {
+      liveCodes.add(code);
+      return code;
+    }
+  }
+}
+
+export function releaseRoomCode(code: string) {
+  liveCodes.delete(code);
+}
