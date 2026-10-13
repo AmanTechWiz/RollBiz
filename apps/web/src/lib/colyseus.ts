@@ -37,8 +37,11 @@ export function createPrivateRoom(session: Session): Promise<GameRoom> {
   return colyseus.create(GAME_ROOM, joinOptions(session, true));
 }
 
-export function joinByCode(session: Session, roomId: string): Promise<GameRoom> {
-  return colyseus.joinById(roomId.trim(), joinOptions(session));
+/** Room codes are 4 digits then 2 letters (no I or O), e.g. "4821KQ". Mirrors apps/server room-logic. */
+export const ROOM_CODE_PATTERN = /^\d{4}[A-HJ-NP-Z]{2}$/;
+
+export function joinByCode(session: Session, code: string): Promise<GameRoom> {
+  return colyseus.joinById(code.trim().toUpperCase(), joinOptions(session));
 }
 
 // The reconnection token lets a reloaded page (or a relaunched PWA) take its seat back.
