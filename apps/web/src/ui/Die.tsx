@@ -19,11 +19,11 @@ export function Die({ value }: { value: number }) {
       initial={{ scale: 0.4, rotate: -30 }}
       animate={{ scale: 1, rotate: 0 }}
       transition={{ type: "spring", stiffness: 500, damping: 15 }}
-      className="grid size-16 grid-cols-3 grid-rows-3 gap-1 rounded-2xl border-4 border-brand-ink bg-white p-2 shadow-[0_4px_0_var(--color-brand-ink)]"
+      className="glass-card grid size-16 grid-cols-3 grid-rows-3 gap-1 rounded-2xl p-2.5"
       aria-label={`Die showing ${value}`}
     >
       {Array.from({ length: 9 }, (_, i) => (
-        <span key={i} className={`rounded-full ${pips.includes(i) ? "bg-brand-ink" : ""}`} />
+        <span key={i} className={`rounded-full ${pips.includes(i) ? "bg-gradient-to-b from-[#ff6b81] to-[#e0294a] shadow-inner" : ""}`} />
       ))}
     </motion.div>
   );

@@ -1,11 +1,6 @@
 import type { HTMLAttributes } from "react";
 
-/** Rounded card with a thick outline and a hard drop shadow. */
+/** Soft glossy white card with rounded corners, the base surface of the Wii U / Switch look. */
 export function Panel({ className = "", ...rest }: HTMLAttributes<HTMLDivElement>) {
-  return (
-    <div
-      className={`rounded-3xl border-4 border-brand-ink bg-white p-5 shadow-[0_6px_0_var(--color-brand-ink)] ${className}`}
-      {...rest}
-    />
-  );
+  return <div className={`glass-card rounded-[1.75rem] p-5 ${className}`} {...rest} />;
 }

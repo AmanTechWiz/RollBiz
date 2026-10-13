@@ -1,32 +1,50 @@
 @import "tailwindcss";
 
-/* Placeholder theme tokens. Final art direction is not decided yet. */
+/* RollBiz theme: Wii / Wii U / Switch system-UI feel. Bright white surfaces, sky-cyan accent,
+   rounded bubbly type, glossy pill buttons, soft shadows, springy motion. */
 @theme {
   --font-display: "Fredoka Variable", ui-rounded, system-ui, sans-serif;
 
-  --color-brand: #6c3cf4;
-  --color-brand-dark: #4b22c2;
-  --color-brand-ink: #2b176b;
-  --color-cream: #fff6e5;
+  /* Accent: Wii cyan */
+  --color-brand: #1ea4e8;
+  --color-brand-dark: #0b7fc4;
+  --color-brand-light: #8fdcff;
+  /* Ink: soft navy-grey for text, never pure black */
+  --color-brand-ink: #33475b;
+  --color-muted: #8fa6c2;
+  /* Surfaces */
+  --color-cream: #eef4fa;
+  --color-line: #dbe6ef;
+  /* Friendly game colours */
+  --color-go: #3ec46d;
+  --color-go-dark: #24a051;
+  --color-sun: #ffc531;
+  --color-sun-dark: #e8a500;
+  --color-berry: #ff5470;
+  --color-berry-dark: #e0294a;
+  --color-grape: #8b6cf6;
 
-  --color-go: #22c55e;
-  --color-go-dark: #15803d;
-  --color-sun: #ffc93c;
-  --color-sun-dark: #d99a00;
-  --color-berry: #ff4d6d;
-  --color-berry-dark: #c9184a;
-
-  /* Property colour groups (placeholder palette) */
+  /* Property colour groups (match the board print) */
   --color-group-brown: #fb8a1f;
   --color-group-light-blue: #9b5de5;
   --color-group-pink: #f472b6;
   --color-group-orange: #38bdf8;
-  --color-group-red: #dc2626;
+  --color-group-red: #ef4444;
   --color-group-yellow: #facc15;
-  --color-group-green: #16a34a;
-  --color-group-dark-blue: #1e3a8a;
+  --color-group-green: #22c55e;
+  --color-group-dark-blue: #2f61d6;
 
-  --radius-chunky: 1.25rem;
+  /* Dark menu palette */
+  --color-page: #10172f;
+  --color-surface: #1b2345;
+  --color-surface-2: #252e55;
+  --color-ink: #e9ecf7;
+  --color-ink-2: #c3cbe4;
+  --color-accent: #55d5f5;
+  --color-gold: #f4c66a;
+  --color-line-dark: rgb(255 255 255 / 0.1);
+
+  --radius-chunky: 1.5rem;
 }
 
 @layer base {
@@ -35,24 +53,29 @@
   #root {
     height: 100%;
   }
-
+  html,
+  body {
+    /* clip (not hidden) so wide decoration ends at the screen edge without making a scroll container */
+    overflow-x: clip;
+  }
   html {
-    /* No rubber-band scrolling or pull-to-refresh in the installed app */
     overscroll-behavior: none;
     -webkit-text-size-adjust: 100%;
   }
-
   body {
-    @apply bg-cream font-display text-brand-ink antialiased;
+    @apply font-display antialiased;
+    color: #e9ecf7;
+    /* Night sky over the city: deep navy-to-indigo, a cyan aurora at the top, a warm
+       sunrise glow at the bottom, and two layers of tiny stars. */
+    background: #10172f;
+    background-attachment: fixed;
     overscroll-behavior: none;
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
-    /* Game UI is not selectable; inputs opt back in below */
     user-select: none;
     -webkit-user-select: none;
     -webkit-touch-callout: none;
   }
-
   input,
   textarea {
     user-select: text;
@@ -60,11 +83,42 @@
   }
 }
 
-/* Full-height app shell that stays clear of notches and home indicators */
+/* Full-height app shell stays clear of notches and home indicators */
 @utility app-shell {
   min-height: 100dvh;
   padding-top: max(env(safe-area-inset-top), 1rem);
   padding-right: max(env(safe-area-inset-right), 1rem);
   padding-bottom: max(env(safe-area-inset-bottom), 1rem);
   padding-left: max(env(safe-area-inset-left), 1rem);
+}
+
+/* Glossy white card, the basic Wii-U/Switch surface */
+@utility glass-card {
+  color: var(--color-brand-ink);
+  background: linear-gradient(180deg, #ffffff 0%, #f7fbfe 100%);
+  border: 1px solid rgb(255 255 255 / 0.9);
+  box-shadow:
+    0 1px 0 rgb(255 255 255) inset,
+    0 10px 28px -10px rgb(30 80 130 / 0.28),
+    0 2px 6px rgb(30 80 130 / 0.08);
+}
+
+/* Cyan selection ring that pops on focus/hover, like the Switch home menu */
+@utility select-ring {
+  box-shadow:
+    0 0 0 3px #ffffff,
+    0 0 0 6px var(--color-brand),
+    0 14px 30px -10px rgb(30 120 200 / 0.45);
+}
+
+/* Floating bubbles behind menus (purely decorative) */
+
+
+@keyframes shine {
+  from { transform: translateX(-120%) skewX(-20deg); }
+  to { transform: translateX(220%) skewX(-20deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
 }
