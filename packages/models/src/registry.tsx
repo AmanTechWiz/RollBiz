@@ -20,7 +20,7 @@ const pawn = (color: PawnColor): ModelEntry => ({
 export const MODELS: readonly ModelEntry[] = [
   { id: "auto-rickshaw", name: "Auto-rickshaw", category: "token", Component: AutoRickshaw, viewDistance: 2.2 },
   { id: "scooter", name: "Scooter", category: "token", Component: Scooter, viewDistance: 2.1 },
-  { id: "elephant", name: "Elephant", category: "token", Component: Elephant, viewDistance: 2.1 },
+  { id: "elephant", name: "Elephant", category: "token", Component: Elephant, viewDistance: 1.8 },
   { id: "steam-train", name: "Steam train", category: "token", Component: SteamTrain, viewDistance: 1.9 },
   pawn("red"),
   pawn("green"),
